@@ -1,0 +1,75 @@
+head	1.1;
+access;
+symbols;
+locks
+	root:1.1; strict;
+comment	@ * @;
+
+
+1.1
+date	2004.11.26.22.36.53;	author root;	state Exp;
+branches;
+next	;
+
+
+desc
+@Test program of the getLongFilename() function source file
+@
+
+
+1.1
+log
+@Initial revision
+@
+text
+@//=======================================================================//
+// Universidade Federal do Rio de Janeiro
+// Escola Politécnica
+// Departamento de Eletrônica e de Computação
+// Professor Marcelo Luiz Drumond Lanza
+// Computation II - Class 2004/2
+// Author: Marcelo Duffles Donato Moreira
+// Description: Test program of the getLongFilename() function source file 
+// Date: 27/11/2004
+//=======================================================================//
+
+/* 
+ * RCS COMMENTS
+ *
+ * $Date$
+ * $Log$
+ */ 
+ 
+ 
+#include <stdio.h>
+#include <stdlib.h>
+#include "functions.h"
+#include "const.h"
+#include "error.h"
+ 
+#define NB_ARGS	   2
+
+static const char rcsid[] = "$Id$";
+
+int main (int argc, char **argv)
+{
+  unsigned errorCode;
+  char encryptedPass[ENCRYPTED_PASS_MAX_LENGTH + 1];
+  
+  if (argc != NB_ARGS)
+  {
+    printf ("USE: <%s> <plain password>\n", argv[0]);
+    exit (INV_ARGS);   
+  }
+  if ((errorCode = encodePassword (argv[1], encryptedPass)) != OK)
+  {
+    printf ("Erro #%u: %s\n", errorCode, showTextErrorMessage (errorCode));
+    exit (errorCode);
+  }
+  
+  printf ("Encrypted password: \"%s\"\n", encryptedPass);
+  exit (OK);
+} 
+
+// $RCSfile$
+@

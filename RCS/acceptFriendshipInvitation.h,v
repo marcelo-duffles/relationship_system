@@ -1,0 +1,132 @@
+head	1.2;
+access;
+symbols;
+locks
+	marceloddm:1.2; strict;
+comment	@ * @;
+
+
+1.2
+date	2005.02.16.22.11.21;	author marceloddm;	state Exp;
+branches;
+next	1.1;
+
+1.1
+date	2004.12.20.20.01.24;	author marceloddm;	state Exp;
+branches;
+next	;
+
+
+desc
+@acceptFriendshipInvitation() header file
+@
+
+
+1.2
+log
+@CGI's added
+@
+text
+@//=================================================================//
+// Universidade Federal do Rio de Janeiro
+// Escola Politécnica
+// Departamento de Eletrônica e de Computação
+// Professor Marcelo Luiz Drumond Lanza
+// Computation II - Class 2004/2
+// Authors: Carlo Fragni and Marcelo Duffles Donato Moreira 
+// Description: acceptFriendshipInvitation() primary function source file 
+// Date: 22/12/2004
+//=================================================================//
+
+/* 
+ * RCS COMMENTS
+ *
+ * $Date: 2004/12/20 20:01:24 $
+ * $Log: acceptFriendshipInvitation.h,v $
+ * Revision 1.1  2004/12/20 20:01:24  marceloddm
+ * Initial revision
+ *
+ */
+
+
+ 
+#ifndef _ACCEPT_FRIENDSHIP_INVITATION_H_
+#define _ACCEPT_FRIENDSHIP_INVITATION_H_ "@@(#)acceptFriendshipInvitation.h $Revision: 1.1 $"
+
+#include "types.h"
+
+/*---------------------------------------------------------------------------------------------------------*/
+unsigned acceptFriendshipInvitation ( userIdType invitedFriend, userIdType invitingFriend);
+/* 	
+INPUT ARGUMENTS
+	- userIdType invitedFriend
+	- userIdType invitingFriend
+	
+DESCRIPTION
+	The acceptFriendshipInvitation() function does the needed operations to establish a friendship relationship between the 'invitingFriend' and the 'invitedFriend' .
+	
+NOTE
+	If the inviting user and the invited user where already friends, their ids are removed from the .in and .out files, their friendship continues in the friends files and the ACCEPT_FRIENDSHIP_INVITATION__FRIENDSHIP_ALREADY_EXISTS error code is returned.
+	
+RETURNED VALUES
+	The acceptFriendshipInvitation() function returns:
+	- ACCEPT_FRIENDSHIP_INVITATION__ERROR_OPENING_INVITED_FRIEND_IN_FILE_FOR_READING if an error occurs while trying to open the invited friend`s in file for reading;
+	- ACCEPT_FRIENDSHIP_INVITATION__INVITED_FRIEND_IN_FILE_DOES_NOT_EXIST if the invited friend`s in file doesn't exist;
+	- ACCEPT_FRIENDSHIP_INVITATION__ERROR_OPENING_INVITED_FRIEND_IN_TEMP_FILE_FOR_WRITTING if an error occurs while trying to open the invited friend`s in temporary file for writting;
+	- ACCEPT_FRIENDSHIP_INVITATION__INVITED_FRIEND_IN_FILE_DOES_NOT_HAVE_INVITATION_FROM_GIVEN_INVITING_FRIEND if there was no invitation from the given inviting friend userId in the invited friend`s in file;
+	- ACCEPT_FRIENDSHIP_INVITATION__ERROR_OPENING_INVITING_FRIEND_OUT_FILE_FOR_READING if an error occurs while trying to open the inviting friend`s out file for reading;
+	- ACCEPT_FRIENDSHIP_INVITATION__INVITING_FRIEND_OUT_FILE_DOES_NOT_EXIST if the inviting friend`s out file doesn't exist;
+	- ACCEPT_FRIENDSHIP_INVITATION__ERROR_OPENING_INVITING_FRIEND_OUT_TEMP_FILE_FOR_WRITTING if an error occurs while trying to open the inviting friend`s out temporary file for writting;
+	- ACCEPT_FRIENDSHIP_INVITATION__INVITING_FRIEND_OUT_FILE_DOES_NOT_HAVE_INVITATION_TO_GIVEN_INVITED_FRIEND if there was no invitation to the given invited friend userId in the inviting friend`s out file;
+	- ACCEPT_FRIENDSHIP_INVITATION__ERROR_OPENING_FRIENDS_FILE_FOR_READING if an error occurs while trying to open the friends file for reading;
+	- ACCEPT_FRIENDSHIP_INVITATION__FRIENDS_FILE_DOES_NOT_EXIST if the friends file doesn't exist;
+	- ACCEPT_FRIENDSHIP_INVITATION__ERROR_OPENING_FRIENDS_TEMP_FILE_FOR_WRITING if an error occurs while trying to open the friends temporary file for writting;
+	- ACCEPT_FRIENDSHIP_INVITATION__FRIENDSHIP_ALREADY_EXISTS if the inviting user and the invited user where already friends;
+	- An error code of getLongFilename() function if an error occours while getting long filename;
+	- An error code of getUserId() function if an error occours while getting an userId from a file;
+	- An error code of putUserId() function if an error occours while putting an userId in a file;
+	- OK in case of success. 
+*/
+/*---------------------------------------------------------------------------------------------------------*/
+
+#endif 
+
+/*$RCSfile: acceptFriendshipInvitation.h,v $*/
+
+
+@
+
+
+1.1
+log
+@Initial revision
+@
+text
+@d8 2
+a9 2
+// Description: editUserData() primary function source file 
+// Date: 15/12/2004
+d15 5
+a19 2
+ * $Date$
+ * $Log$
+d24 5
+a28 2
+#ifndef _SUBSTITUIR_
+#define _SUBSTITUIR_ "@@(#)substituir.h$Revision$"
+d39 3
+d44 12
+a55 3
+	- GET_USERS__INVALID_SEARCH_KEY if the `searchKey` is invalid;
+	- GET_USERS__ERROR_OPENING_USERS_FILE_FOR_READING if there's an error while opening the users file;
+	- GET_USERS__USERS_FILE_DOES_NOT_EXIST if the users file doesn't exist;
+d57 2
+a58 1
+	- An error code of getUserData() function if an error occours while getting user data from a file;
+d63 1
+a63 1
+#endif /*_SUBSTITUIR_*/
+d65 1
+a65 1
+/*$RCSfile$*/
+@

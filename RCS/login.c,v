@@ -1,0 +1,662 @@
+head	1.7;
+access;
+symbols;
+locks
+	marceloddm:1.7; strict;
+comment	@ * @;
+
+
+1.7
+date	2005.02.16.22.11.21;	author marceloddm;	state Exp;
+branches;
+next	1.6;
+
+1.6
+date	2004.12.21.20.26.02;	author marceloddm;	state Exp;
+branches;
+next	1.5;
+
+1.5
+date	2004.12.20.23.52.42;	author marceloddm;	state Exp;
+branches;
+next	1.4;
+
+1.4
+date	2004.12.20.12.50.03;	author marceloddm;	state Exp;
+branches;
+next	1.3;
+
+1.3
+date	2004.12.17.01.29.05;	author marceloddm;	state Exp;
+branches;
+next	1.2;
+
+1.2
+date	2004.12.17.00.26.07;	author marceloddm;	state Exp;
+branches;
+next	1.1;
+
+1.1
+date	2004.12.16.00.26.44;	author marceloddm;	state Exp;
+branches;
+next	;
+
+
+desc
+@This function does the login of the users in the system
+@
+
+
+1.7
+log
+@CGI's added
+@
+text
+@//=================================================================//
+// Universidade Federal do Rio de Janeiro
+// Escola Politécnica
+// Departamento de Eletrônica e de Computação
+// Professor Marcelo Luiz Drumond Lanza
+// Computation II - Class 2004/2
+// Authors: Carlo Fragni and Marcelo Duffles Donato Moreira 
+// Description: login() primary function source file 
+// Date: 16/12/2004
+//=================================================================//
+
+/* 
+ * RCS COMMENTS
+ *
+ * $Date: 2004/12/21 20:26:02 $
+ * $Log: login.c,v $
+ * Revision 1.6  2004/12/21 20:26:02  marceloddm
+ * Some corrections have been done
+ *
+ * Revision 1.5  2004/12/20 23:52:42  marceloddm
+ * This function is almost finish
+ * Next step: make the autenticateUser() function
+ *
+ * Revision 1.4  2004/12/20 12:50:03  marceloddm
+ * Implementation of showHtmlErrorPage() function has been done
+ *
+ * Revision 1.3  2004/12/17 01:29:05  marceloddm
+ * We must make the showHtmlErrorPage() to complete this function
+ *
+ * Revision 1.2  2004/12/17 00:26:07  marceloddm
+ * Next step: include the new constants and make login.h
+ *
+ */
+
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+#include "mlcgi.h"
+#include "const.h"
+#include "types.h"
+#include "error.h"
+#include "config.h"
+#include "functions.h"
+
+
+static const char rcsid [] = "$Id: login.c,v 1.6 2004/12/21 20:26:02 marceloddm Exp marceloddm $";
+
+
+int main (int argc, char **argv)
+{
+  unsigned errorCode;	
+  char username [MAX_LENGTH_USERNAME + 1];
+  char plainPass [MAX_LENGTH_PLAIN_PASS + 1];
+  char cookieName[COOKIE_NAME_LENGTH +1];
+  char cookieValue[COOKIE_VALUE_LENGTH +1];
+  char cookieFileName[MAX_LENGTH_LONG_FILENAME +1];
+  time_t cookieExpiration;
+
+  if ((errorCode = mlCgiInitialize ()) != ML_CGI_OK)
+  {
+    if (errorCode == ML_CGI_FATAL_ERROR)
+      showHtmlErrorPage (FATAL_ERROR);
+    if (errorCode == ML_CGI_MEMORY_ALLOCATION_ERROR)
+      showHtmlErrorPage (MEMORY_ALLOCATION_ERROR);
+    if (errorCode == ML_CGI_INVALID_CONTENT_LENGTH)
+      showHtmlErrorPage (INVALID_CONTENT_LENGTH);
+    if (errorCode == ML_CGI_IO_ERROR)
+      showHtmlErrorPage (CGI_IO_ERROR);
+    if (errorCode == ML_CGI_INVALID_CONTENT_TYPE)
+      showHtmlErrorPage (INVALID_CONTENT_TYPE);
+    if (errorCode == ML_CGI_INVALID_REQUEST_METHOD)
+      showHtmlErrorPage (INVALID_REQUEST_METHOD);
+    exit (ML_CGI_OK);
+  }
+
+  if (!isCgi)
+  {
+    printf ("%s\n", showTextErrorMessage (IS_NOT_CGI));
+    exit (ML_CGI_OK);
+  }
+	  
+  mlCgiBeginHttpHeader ("text/html");
+    
+  if ((errorCode = mlCgiGetFormStringNoNewLines ("username", username, MAX_LENGTH_USERNAME)) != ML_CGI_OK)
+  {
+    mlCgiEndHttpHeader ();
+    mlCgiFreeResources ();
+    if (errorCode == ML_CGI_FORM_FIELD_NOT_FOUND)
+      showHtmlErrorPage (FORM_USERNAME_NOT_FOUND);
+    if (errorCode == ML_CGI_INVALID_FORM_LENGTH)
+      showHtmlErrorPage (INVALID_FORM_USERNAME_LENGTH);
+    exit (ML_CGI_OK);
+  }
+
+  if ((errorCode = mlCgiGetFormStringNoNewLines ("password", plainPass, MAX_LENGTH_PLAIN_PASS)) != ML_CGI_OK)
+  {
+    mlCgiEndHttpHeader ();
+    mlCgiFreeResources ();
+    if (errorCode == ML_CGI_FORM_FIELD_NOT_FOUND)
+        showHtmlErrorPage (FORM_PLAIN_PASS_NOT_FOUND);
+    if (errorCode == ML_CGI_INVALID_FORM_LENGTH)
+        showHtmlErrorPage (INVALID_FORM_PLAIN_PASS_LENGTH);
+    exit (ML_CGI_OK);
+  }
+
+  if ((errorCode = autenticateUser (username, plainPass)) != OK)
+  {
+    mlCgiEndHttpHeader ();
+    mlCgiFreeResources ();
+    showHtmlErrorPage (errorCode);
+    exit (ML_CGI_OK);
+  }
+
+  if ((errorCode = verifyIfCookieFileExist (username, cookieName)) != OK)
+    if (errorCode != VERIFY_IF_COOKIE_FILE_EXIST__COOKIE_FILE_DOES_NOT_EXIST)
+	{
+      mlCgiEndHttpHeader ();
+      mlCgiFreeResources ();
+      showHtmlErrorPage (errorCode);
+      exit (ML_CGI_OK);
+	}
+  
+  if (errorCode != VERIFY_IF_COOKIE_FILE_EXIST__COOKIE_FILE_DOES_NOT_EXIST)
+  {
+    if ((errorCode = getCookieValue (cookieName, cookieValue)) != OK)
+    {
+      mlCgiEndHttpHeader ();
+      mlCgiFreeResources ();
+      showHtmlErrorPage (errorCode);
+      exit (ML_CGI_OK);
+    }
+    if ((errorCode = mlCgiSetCookie (cookieName, cookieValue, 0, NULL, NULL, NULL)) != ML_CGI_OK)
+    {
+      mlCgiEndHttpHeader();
+      mlCgiFreeResources ();
+      if (errorCode == ML_CGI_INVALID_COOKIE_NAME)     
+        showHtmlErrorPage (INVALID_COOKIE_NAME);
+      if (errorCode == ML_CGI_INVALID_COOKIE_VALUE)
+        showHtmlErrorPage (INVALID_COOKIE_VALUE);
+      if (errorCode == ML_CGI_INVALID_COOKIE_EXPIRATION)
+        showHtmlErrorPage (INVALID_COOKIE_EXPIRATION);
+      exit (ML_CGI_OK); 
+    }
+    if ((errorCode = getLongFilename (COOKIES_DIR, cookieName, cookieFileName)) != OK)
+    {
+      mlCgiEndHttpHeader();
+      mlCgiFreeResources ();
+      showHtmlErrorPage (errorCode);
+      exit (ML_CGI_OK); 
+    }
+    remove (cookieFileName); 
+  }
+  
+  if ((errorCode = createRandomString (COOKIE_VALUE_VALID_CHARACTERS, COOKIE_VALUE_LENGTH, cookieValue)) != OK)
+  {
+    mlCgiEndHttpHeader();
+    mlCgiFreeResources ();
+    showHtmlErrorPage (errorCode);
+    exit (ML_CGI_OK); 
+  }
+  
+  cookieExpiration = COOKIE_EXPIRATION + time (NULL);   
+  if ((errorCode = createNewCookieFile (cookieName, cookieValue, cookieExpiration, mlCgiEnvironmentVariablesValues[ML_CGI_REMOTE_ADDRESS])) != OK)
+  {
+    mlCgiEndHttpHeader();
+    mlCgiFreeResources ();
+    showHtmlErrorPage (errorCode);
+    exit (ML_CGI_OK); 
+  }
+  
+  if ((errorCode = mlCgiSetCookie (cookieName, cookieValue, COOKIE_EXPIRATION, NULL, NULL, NULL)) != ML_CGI_OK)
+  {
+    mlCgiEndHttpHeader();
+    mlCgiFreeResources ();
+    if (errorCode == ML_CGI_INVALID_COOKIE_NAME)
+      showHtmlErrorPage (INVALID_COOKIE_NAME);
+    if (errorCode == ML_CGI_INVALID_COOKIE_VALUE)
+      showHtmlErrorPage (INVALID_COOKIE_VALUE);
+    if (errorCode == ML_CGI_INVALID_COOKIE_EXPIRATION)
+      showHtmlErrorPage (INVALID_COOKIE_EXPIRATION);
+    exit (ML_CGI_OK); 
+  }
+  mlCgiEndHttpHeader();
+  mlCgiFreeResources ();
+  
+  showHtmlInitialPage (cookieName);
+
+  exit (ML_CGI_OK);
+}
+
+/*$RCSfile: login.c,v $*/
+@
+
+
+1.6
+log
+@Some corrections have been done
+@
+text
+@d15 1
+a15 1
+ * $Date: 2004/12/20 23:52:42 $
+d17 3
+d47 2
+a48 1
+static const char rcsid [] = "$Id: login.c,v 1.5 2004/12/20 23:52:42 marceloddm Exp marceloddm $";
+d63 1
+a63 1
+      showHtmlErrorPage (LOGIN__FATAL_ERROR);
+d65 1
+a65 1
+      showHtmlErrorPage (LOGIN__MEMORY_ALLOCATION_ERROR);
+d67 1
+a67 1
+      showHtmlErrorPage (LOGIN__INVALID_CONTENT_LENGTH);
+d69 1
+a69 1
+      showHtmlErrorPage (LOGIN__CGI_IO_ERROR);
+d71 1
+a71 1
+      showHtmlErrorPage (LOGIN__INVALID_CONTENT_TYPE);
+d73 1
+a73 1
+      showHtmlErrorPage (LOGIN__INVALID_REQUEST_METHOD);
+d79 1
+a79 1
+    printf ("%s\n", showTextErrorMessage (LOGIN__IS_NOT_CGI));
+d90 1
+a90 1
+      showHtmlErrorPage (LOGIN__FORM_USERNAME_NOT_FOUND);
+d92 1
+a92 1
+      showHtmlErrorPage (LOGIN__INVALID_FORM_USERNAME_LENGTH);
+d101 1
+a101 1
+        showHtmlErrorPage (LOGIN__FORM_PLAIN_PASS_NOT_FOUND);
+d103 1
+a103 1
+        showHtmlErrorPage (LOGIN__INVALID_FORM_PLAIN_PASS_LENGTH);
+d115 38
+a152 35
+  if ((errorCode = verifyIfCookieFileExist ("username", cookieName)) != OK)
+  {
+    mlCgiEndHttpHeader ();
+    mlCgiFreeResources ();
+    showHtmlErrorPage (errorCode);
+    exit (ML_CGI_OK);
+  }
+  
+  if ((errorCode = getCookieValue (cookieName, cookieValue)) != OK)
+  {
+    mlCgiEndHttpHeader ();
+    mlCgiFreeResources ();
+    showHtmlErrorPage (errorCode);
+    exit (ML_CGI_OK);
+  }
+  
+  if ((errorCode = mlCgiSetCookie (cookieName, cookieValue, 0, NULL, NULL, NULL)) != ML_CGI_OK)
+  {
+    mlCgiEndHttpHeader();
+    mlCgiFreeResources ();
+    if (errorCode == ML_CGI_INVALID_COOKIE_NAME)     
+      showHtmlErrorPage (LOGIN_INVALID_COOKIE_NAME);
+    if (errorCode == ML_CGI_INVALID_COOKIE_VALUE)
+      showHtmlErrorPage (LOGIN_INVALID_COOKIE_VALUE);
+    if (errorCode == ML_CGI_INVALID_COOKIE_EXPIRATION)
+      showHtmlErrorPage (LOGIN_INVALID_COOKIE_EXPIRATION);
+    exit (ML_CGI_OK); 
+  }
+  
+  if ((errorCode = getLongFilename (COOKIES_DIR, cookieName, cookieFileName)) != OK)
+  {
+    mlCgiEndHttpHeader();
+    mlCgiFreeResources ();
+    showHtmlErrorPage (errorCode);
+    exit (ML_CGI_OK); 
+a153 2
+ 
+  remove (cookieFileName); 
+d164 1
+a164 1
+  if ((errorCode = createNewCookieFile (cookieName, cookieValue, cookieExpiration)) != OK)
+d172 1
+a172 1
+  if ((errorCode = mlCgiSetCookie (cookieName, cookieValue, cookieExpiration, NULL, NULL, NULL)) != ML_CGI_OK)
+d177 1
+a177 1
+      showHtmlErrorPage (LOGIN_INVALID_COOKIE_NAME);
+d179 1
+a179 1
+      showHtmlErrorPage (LOGIN_INVALID_COOKIE_VALUE);
+d181 1
+a181 1
+      showHtmlErrorPage (LOGIN_INVALID_COOKIE_EXPIRATION);
+d187 1
+a187 4
+  if ((userIdType) strtoul (cookieName, NULL, 10) == ADMINISTRATOR_UID)
+   printf ("Mostrar menu admin.\n"); // mostrarMenuAdmin ();
+  else
+    printf ("Mostrar menu Web User.\n"); //mostrarMenuWebUser ();
+@
+
+
+1.5
+log
+@This function is almost finish
+Next step: make the autenticateUser() function
+@
+text
+@d15 1
+a15 1
+ * $Date: 2004/12/20 12:50:03 $
+d17 4
+d44 1
+a44 1
+static const char rcsid [] = "$Id: login.c,v 1.4 2004/12/20 12:50:03 marceloddm Exp marceloddm $";
+d70 1
+a70 1
+     exit (ML_CGI_OK);
+d103 1
+a103 1
+  /*if ((errorCode = autenticateUser (username, plainPass) != OK)*/ if ((username == "a") && (plainPass == "a"))
+d110 2
+a111 2
+  
+  if ((errorCode = verifyIfcookieFileExist (username, cookieName)) != OK)
+@
+
+
+1.4
+log
+@Implementation of showHtmlErrorPage() function has been done
+@
+text
+@d15 1
+a15 1
+ * $Date: 2004/12/17 01:29:05 $
+d17 3
+a28 1
+
+d31 1
+d34 1
+d36 2
+d40 1
+a40 1
+static const char rcsid [] = "$Id: login.c,v 1.3 2004/12/17 01:29:05 marceloddm Exp marceloddm $";
+d47 4
+d61 1
+a61 1
+      showHtmlErrorpage (LOGIN__CGI_IO_ERROR);
+d88 1
+a88 1
+  if ((errorCode = mlCgiGetFormStringNoNewLines ("plainPass", plainPass, MAX_LENGTH_PLAIN_PASS)) != ML_CGI_OK)
+d107 17
+a123 1
+/*  if (arquivoDeCookieExiste)
+d125 37
+a161 14
+    if ((errorCode = mlCgiSetCookie (nomeDoArquivo, valorDoCookie, 0, NULL, NULL, NULL)) != ML_CGI_OK)
+    {
+      mlCgiEndHttpHeader();
+      mlCgiFreeResources ();
+      if (errorCode == ML_CGI_INVALID_COOKIE_NAME)     
+        showHtmlErrorPage (LOGIN_INVALID_COOKIE_NAME);
+      if (errorCode == (ML_CGI_INVALID_COOKIE_VALUE)
+	showHtmlErrorPage (LOGIN_INVALID_COOKIE_VALUE);
+      if (errorCode == (ML_CGI_INVALID_COOKIE_EXPIRATION)
+        showHtmlErrorPage (LOGIN_INVALID_COOKIE_EXPIRATION);
+      exit (ML_CGI_OK); 
+    }
+    remove (nomeDoArquivo);
+  }*/
+d163 1
+a163 1
+  if ((errorCode = mlCgiSetCookie (userId, stringAleatoriaDeTamanho64, NULL, NULL, NULL)) != ML_CGI_OK)
+d167 1
+a167 1
+   /* if (errorCode == ML_CGI_INVALID_COOKIE_NAME)
+d169 1
+a169 1
+    if (errorCode == (ML_CGI_INVALID_COOKIE_VALUE)
+d171 2
+a172 2
+    if (errorCode == (ML_CGI_INVALID_COOKIE_EXPIRATION)
+      showHtmlErrorPage (LOGIN_INVALID_COOKIE_EXPIRATION);*/
+d178 2
+a179 2
+ /* if (userCategory == administrator)
+    mostrarMenuAdmin ();
+d181 1
+a181 1
+    mostrarMenuWebUser ();*/
+@
+
+
+1.3
+log
+@We must make the showHtmlErrorPage() to complete this function
+@
+text
+@d15 1
+a15 1
+ * $Date: 2004/12/17 00:26:07 $
+d17 3
+a28 1
+#include <string.h>
+d34 1
+a34 1
+static const char rcsid [] = "$Id: login.c,v 1.2 2004/12/17 00:26:07 marceloddm Exp marceloddm $";
+d42 16
+a57 2
+  if (mlCgiInitialize ())
+    exit (ML_CGI_OK);
+d71 2
+a72 2
+    /*if (errorCode == ML_CGI_FORM_FIELD_NOT_FOUND)
+      printf ("%s\n", showHtmlErrorPage (LOGIN__FORM_USERNAME_NOT_FOUND));
+d74 1
+a74 2
+      printf ("%s\n", showHtmlErrorPage (LOGIN__INVALID_FORM_USERNAME_LENGTH));*/
+    printf ("Erro no campo username.\n");
+d82 1
+a82 1
+   /* if (errorCode == ML_CGI_FORM_FIELD_NOT_FOUND)
+d85 1
+a85 2
+        showHtmlErrorPage (LOGIN__INVALID_FORM_PLAIN_PASS_LENGTH);*/
+    printf ("Erro no campo plainPass.\n");
+d89 1
+a89 1
+  if ((errorCode = loginUser (username, plainPass) != OK)
+d97 1
+a97 1
+  if (arquivoDeCookieExiste)
+d103 1
+a103 1
+      if (errorCode == ML_CGI_INVALID_COOKIE_NAME)      /* isso tudo pode ser uma unica funcao */
+d112 1
+a112 1
+  }
+d118 1
+a118 1
+    if (errorCode == ML_CGI_INVALID_COOKIE_NAME)
+d123 1
+a123 1
+      showHtmlErrorPage (LOGIN_INVALID_COOKIE_EXPIRATION);
+d129 1
+a129 1
+  if (userCategory == administrator)
+d132 1
+a132 1
+    mostrarMenuWebUser ();
+@
+
+
+1.2
+log
+@Next step: include the new constants and make login.h
+@
+text
+@d15 5
+a19 2
+ * $Date$
+ * $Log$
+d32 1
+a32 1
+static const char rcsid [] = "$Id$";
+d53 1
+a53 1
+    mlCgiEndHttpHeader();
+d55 2
+a56 2
+    if (errorCode == ML_CGI_FORM_FIELD_NOT_FOUND)
+      printf ("%s\n", showHtmlErrorPage (LOGIN__FORM_FILED_NOT_FOUND));
+d58 2
+a59 1
+      printf ("%s\n", showHtmlErrorPage (LOGIN__INVALID_FORM_LENGTH));
+d63 1
+a63 1
+  if (mlCgiGetFormStringNoNewLines ("password", password, MAX_LENGTH_PASSWORD) != ML_CGI_OK)
+d65 1
+a65 1
+    mlCgiEndHttpHeader();
+d67 5
+a71 1
+    printf ("Erro no valor de password\n");
+d75 9
+a83 5
+  printf ("Username: %s<br>\n", username);
+  printf ("Password: %s\n", password);
+
+  if (!strcmp (username,"aluno") && 
+     !strcmp (password,"123456"))
+d85 13
+a97 4
+    mlCgiSetCookie ("COMPUTACAO", "qwertyuiopasdfghjkl", 300, NULL, NULL, NULL);
+    mlCgiEndHttpHeader();
+    printf ("Usuario valido <br>\n");
+    printf ("IP: %s\n", mlCgiEnvironmentVariablesValues[ML_CGI_REMOTE_ADDRESS]);
+d99 2
+a100 1
+  else
+d103 10
+a112 2
+    printf ("Usuario invalido ou senha incorreta\n");
+  } 
+d114 6
+d123 1
+a123 6
+  
+
+
+/*$RCSfile$*/
+
+
+@
+
+
+1.1
+log
+@Initial revision
+@
+text
+@d1 13
+a13 17
+/*
+ * Universidade do Brasil
+ * Escola Politecnica
+ * Departamento de Eletronica e Computacao
+ * Computacao II
+ * Prof. Marcelo Luiz Drumond Lanza
+ * CGI Library Version 1.0
+ *
+ * File:                login.c
+ * Author:              Marcelo Luiz Drumond Lanza
+ * Description:         Program for testing the CGI library.
+ *
+ * $Date: 2001/06/17 01:37:33 $
+ * $Log: login.c,v $
+ * Revision 1.2  2001/06/17 01:37:33  lanza
+ * Form test
+ *
+d15 2
+d19 1
+a19 1
+#define __ML_CGI_GLOBAL_VARIABLES__
+d25 3
+d29 1
+a29 2
+#define MAX_LENGTH_USERNAME	8
+#define MAX_LENGTH_PASSWORD	8
+d33 1
+a33 1
+	
+d35 1
+a35 1
+  char password [MAX_LENGTH_PASSWORD + 1];
+d42 1
+a42 1
+    printf ("Este programa nao pode ser executado na linha de comando\n");
+a46 1
+  // mlCgiEndHttpHeader();
+d48 2
+a49 2
+ if (mlCgiGetFormStringNoNewLines ("username", username, MAX_LENGTH_USERNAME) != ML_CGI_OK)
+ {
+d52 4
+a55 1
+    printf ("Erro no valor de username\n");
+d57 1
+a57 1
+ }
+d59 2
+a60 2
+ if (mlCgiGetFormStringNoNewLines ("password", password, MAX_LENGTH_PASSWORD) != ML_CGI_OK)
+ {
+d62 4
+a65 4
+   mlCgiFreeResources ();
+   printf ("Erro no valor de password\n");
+   exit (ML_CGI_OK);
+ }
+d67 2
+a68 2
+printf ("Username: %s<br>\n", username);
+printf ("Password: %s\n", password);
+d70 1
+a70 1
+ if (!strcmp (username,"aluno") && 
+a71 8
+ {
+   mlCgiSetCookie ("COMPUTACAO", "qwertyuiopasdfghjkl", 300, NULL, NULL, NULL);
+   mlCgiEndHttpHeader();
+   printf ("Usuario valido <br>\n");
+   printf ("IP: %s\n", mlCgiEnvironmentVariablesValues[ML_CGI_REMOTE_ADDRESS]);
+   
+ }
+ else
+d73 12
+a84 5
+   mlCgiEndHttpHeader();
+   printf ("Usuario invalido ou senha incorreta\n");
+ } 
+ mlCgiFreeResources ();
+ exit (ML_CGI_OK);
+d86 7
+@

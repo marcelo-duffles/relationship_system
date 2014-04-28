@@ -1,0 +1,208 @@
+head	1.2;
+access;
+symbols;
+locks
+	marceloddm:1.2; strict;
+comment	@ * @;
+
+
+1.2
+date	2005.02.16.22.11.21;	author marceloddm;	state Exp;
+branches;
+next	1.1;
+
+1.1
+date	2004.12.28.00.37.46;	author marceloddm;	state Exp;
+branches;
+next	;
+
+
+desc
+@getFriends() function source file
+@
+
+
+1.2
+log
+@CGI's added
+@
+text
+@//=================================================================//
+// Universidade Federal do Rio de Janeiro
+// Escola Politécnica
+// Departamento de Eletrônica e de Computação
+// Professor Marcelo Luiz Drumond Lanza
+// Computation II - Class 2004/2
+// Authors: Carlo Fragni and Marcelo Duffles Donato Moreira 
+// Description: getFriends() primary function source file 
+// Date: 26/12/2004
+//=================================================================//
+
+/* 
+ * RCS COMMENTS
+ *
+ * $Date: 2004/12/28 00:37:46 $
+ * $Log: getFriends.c,v $
+ * Revision 1.1  2004/12/28 00:37:46  marceloddm
+ * Initial revision
+ *
+ */
+
+#include <stdio.h> 
+#include <stdlib.h>
+#include <string.h>
+#include <errno.h>
+#include <sys/errno.h>
+#include "const.h"
+#include "types.h"
+#include "config.h"
+#include "error.h"
+#include "functions.h"
+#include "getFriends.h"
+ 
+static const char rcsid [] = "$Id: getFriends.c,v 1.1 2004/12/28 00:37:46 marceloddm Exp marceloddm $";
+
+unsigned getFriends ( userIdType userId, userDataType ** firstFriend)
+{
+  unsigned retCode, retCode2;
+  char friendsFileName [MAX_LENGTH_LONG_FILENAME +1];
+  FILE *rFriendsFile;
+  userIdType buffer, bufferTwo;
+  userDataType * lastFriend, *cursor, friendData, userData;
+  boolean allFound;
+
+  if ((retCode = getDataFromId (userId, &userData)) != OK)
+    return (retCode); 
+    
+  /*PERFORMING NEEDED OPERATIONS IN THE FRIENDS FILE*/ 
+  
+  if ((retCode = getLongFilename (DATA_DIR, FRIENDS_FILE_NAME , friendsFileName)) != OK)
+    return (retCode);
+
+  if ((rFriendsFile = fopen (friendsFileName, "r")) == NULL)
+  {
+    if (errno != ENOENT)
+      return (GET_FRIENDS__ERROR_OPENING_FRIENDS_FILE_FOR_READING);
+    return (GET_FRIENDS__FRIENDS_FILE_DOES_NOT_EXIST);
+  }
+
+  allFound = false;
+  *firstFriend = NULL;
+  lastFriend   = NULL;  
+  
+  for (retCode = 0; ( (retCode != GET_USER_ID__END_OF_FILE) && ( ! allFound ) );)  
+  {
+    if ((retCode = getUserId ( rFriendsFile, &buffer)) != OK )
+    {
+      if (retCode != GET_USER_ID__END_OF_FILE)
+      {
+        fclose (rFriendsFile);
+        freeFIFOResources ( firstFriend , &lastFriend );
+        return (retCode);
+      }
+    }
+    if ((retCode = getUserId ( rFriendsFile, &bufferTwo)) != OK )
+    {
+      if (retCode != GET_USER_ID__END_OF_FILE)
+      {
+        fclose (rFriendsFile);
+        freeFIFOResources ( firstFriend , &lastFriend );
+        return (retCode);
+      }
+    }    
+    if (retCode != GET_USER_ID__END_OF_FILE) /*SEARCH FOR THE POSITION WHERE THE USER'S FRIENDS ARE*/
+    {  
+      if ( buffer == userId ) /*FRIEND FOUND, INSERTING INTO FIFO*/ 
+      { 
+        friendData.userId = bufferTwo;
+        if( ( retCode2 = insertFIFO ( firstFriend, &lastFriend, &friendData ) ) != OK )
+	{
+	  fclose ( rFriendsFile );
+	  freeFIFOResources ( firstFriend , &lastFriend );
+	  return ( retCode2);
+	}
+      }
+      if ( buffer > userId ) /*ALL FRIENDS HAVE BEEN FOUND*/
+        allFound = true;
+    }  
+  }
+  
+  fclose (rFriendsFile);
+  if (! (* firstFriend) ) /*NO FRIENDS FOUND*/
+      return (GET_FRIENDS__NO_FRIENDS_FOUND);
+    
+       
+  /*GETTING USERDATA FROM THE USERS'S FRIENDS*/
+  
+  cursor = (*firstFriend);
+  
+  while ( cursor != NULL )
+  {
+    if ( ( retCode = getDataFromId (cursor->userId, cursor) ) != OK )
+    {
+      fclose ( rFriendsFile );
+      freeFIFOResources ( firstFriend , &lastFriend );
+      return ( retCode);
+    }  
+    
+    cursor = cursor->next;
+    
+  }
+  
+  return (OK);      
+}
+
+/*$RCSfile: getFriends.c,v $*/
+
+
+@
+
+
+1.1
+log
+@Initial revision
+@
+text
+@d15 5
+a19 2
+ * $Date$
+ * $Log$
+d32 1
+a32 1
+#include "excludeFriend.h"
+d34 1
+a34 1
+static const char rcsid [] = "$Id$";
+d38 1
+a38 1
+  unsigned retCode;
+d42 1
+a42 1
+  userDataType * lastFriend, *cursor, friendData;
+d44 4
+a47 1
+  
+d61 3
+a63 2
+  ( * firstFriend ) = NULL;
+    
+d89 1
+a89 1
+        if( ( retCode = insertFIFO ( firstFriend, &lastFriend, &friendData ) ) != OK )
+d93 1
+a93 1
+	  return ( retCode);
+d101 1
+a102 2
+    {
+      fclose (rFriendsFile);
+d104 2
+a105 4
+    }
+        
+  fclose (rFriendsFile);
+  
+d126 1
+a126 1
+/*$RCSfile$*/
+@

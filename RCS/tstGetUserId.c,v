@@ -1,0 +1,107 @@
+head	1.2;
+access;
+symbols;
+locks
+	root:1.2; strict;
+comment	@ * @;
+
+
+1.2
+date	2004.11.27.14.14.08;	author root;	state Exp;
+branches;
+next	1.1;
+
+1.1
+date	2004.11.27.14.10.29;	author root;	state Exp;
+branches;
+next	;
+
+
+desc
+@Test program of the getUserId() function source file
+@
+
+
+1.2
+log
+@Next step: complete the source code
+@
+text
+@//=======================================================================//
+// Universidade Federal do Rio de Janeiro
+// Escola Politécnica
+// Departamento de Eletrônica e de Computação
+// Professor Marcelo Luiz Drumond Lanza
+// Computation II - Class 2004/2
+// Author: Marcelo Duffles Donato Moreira
+// Description: Test program of the getUserId() function source file 
+// Date: 28/11/2004
+//=======================================================================//
+
+/* 
+ * RCS COMMENTS
+ *
+ * $Date: 2004/11/27 14:10:29 $
+ * $Log: tstGetUserId.c,v $
+ * Revision 1.1  2004/11/27 14:10:29  root
+ * Initial revision
+ *
+ */ 
+ 
+ 
+#include <stdio.h>
+#include <stdlib.h>
+#include "functions.h"
+#include "const.h"
+#include "error.h"
+ 
+#define NB_ARGS  2
+
+static const char rcsid[] = "$Id: tstGetUserId.c,v 1.1 2004/11/27 14:10:29 root Exp root $";
+
+int main (int argc, char **argv)
+{
+  unsigned errorCode;
+  char longFilename[MAX_LENGTH_LONG_FILENAME +1];
+  
+  if (argc != NB_ARGS)
+  {
+    printf ("USE: <%s> <FILE>\n", argv[0]);
+    exit (INV_ARGS);   
+  }
+  if ((errorCode = getLongFilename (argv[2], argv[1], longFilename)) != OK)
+  {
+    printf ("Erro #%u: %s\n", errorCode, showTextErrorMessage (errorCode));
+    exit (errorCode);
+  }
+  
+  printf ("Long filename: \"%s\"\n", longFilename);
+  exit (OK);
+} 
+
+// $RCSfile: tstGetUserId.c,v $
+@
+
+
+1.1
+log
+@Initial revision
+@
+text
+@d15 5
+a19 2
+ * $Date$
+ * $Log$
+d29 1
+a29 1
+#define NB_ARGS	   3
+d31 1
+a31 1
+static const char rcsid[] = "$Id$";
+d40 1
+a40 1
+    printf ("USE: <%s> <FILENAME> <PATH>\n", argv[0]);
+d53 1
+a53 1
+// $RCSfile$
+@

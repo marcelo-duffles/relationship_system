@@ -1,0 +1,384 @@
+head	1.10;
+access;
+symbols;
+locks
+	marceloddm:1.10; strict;
+comment	@ * @;
+
+
+1.10
+date	2004.12.15.18.15.39;	author marceloddm;	state Exp;
+branches;
+next	1.9;
+
+1.9
+date	2004.12.15.01.38.42;	author marceloddm;	state Exp;
+branches;
+next	1.8;
+
+1.8
+date	2004.12.14.16.18.22;	author marceloddm;	state Exp;
+branches;
+next	1.7;
+
+1.7
+date	2004.12.14.02.55.21;	author marceloddm;	state Exp;
+branches;
+next	1.6;
+
+1.6
+date	2004.12.13.08.02.03;	author marceloddm;	state Exp;
+branches;
+next	1.5;
+
+1.5
+date	2004.12.11.12.38.50;	author marceloddm;	state Exp;
+branches;
+next	1.4;
+
+1.4
+date	2004.11.30.00.30.43;	author marceloddm;	state Exp;
+branches;
+next	1.3;
+
+1.3
+date	2004.11.27.00.30.11;	author marceloddm;	state Exp;
+branches;
+next	1.2;
+
+1.2
+date	2004.11.26.13.52.39;	author marceloddm;	state Exp;
+branches;
+next	1.1;
+
+1.1
+date	2004.11.26.13.52.00;	author marceloddm;	state Exp;
+branches;
+next	;
+
+
+desc
+@Types header file
+@
+
+
+1.10
+log
+@tempUserDataType has been removed
+@
+text
+@//===========================================================================// 
+// Universidade Federal do Rio de Janeiro
+// Escola Politécnica
+// Departamento de Eletrônica e de Computação
+// Professor Marcelo Luiz Drumond Lanza
+// Computation II - Class 2004/2
+// Authors: Carlo Fragni and Marcelo Duffles Donato Moreira
+// Description: Types header file 
+// Date: 22/10/2004
+//===========================================================================//
+
+/* 
+ * RCS COMMENTS
+ *
+ * $Date: 2004/12/15 01:38:42 $
+ * $Log: types.h,v $
+ * Revision 1.9  2004/12/15 01:38:42  marceloddm
+ * tempUserDataType have been defined
+ *
+ * Revision 1.7  2004/12/14 02:55:21  marceloddm
+ * Grammar corrections have been made
+ *
+ * Revision 1.6  2004/12/13 08:02:03  marceloddm
+ * Lines added: #undef false
+ * #undef true
+ *
+ * Revision 1.5  2004/12/11 12:38:50  marceloddm
+ * Author changed for 'marceloddm'
+ *
+ * Revision 1.4  2004/11/30 00:30:43  root
+ * Last modification: userDataType
+ *
+ * Revision 1.3  2004/11/27 00:30:11  root
+ * Next step: complete the missing spaces
+ *
+ * Revision 1.2  2004/11/26 13:52:39  root
+ * RCS's strings added
+ *
+ */ 
+ 
+ 
+#ifndef _TYPES_H_
+#define _TYPES_H_ "@@(#)types.h $Revision: 1.9 $"
+
+
+#include "const.h"
+
+#define BYTE unsigned char 
+#define userIdType unsigned long long
+
+#undef false
+#undef true
+typedef enum {false, true} boolean;
+typedef enum {administrator = 1, webUser, relative} userCategoryType;
+typedef enum {notAnswered, male, female} genderType;
+typedef enum {notGiven, single, married, widowed} relationshipStatusType;
+
+
+typedef struct
+{
+  char street[MAX_LENGTH_STREET +1];
+  char homeNumber[MAX_LENGTH_HOME_NUMBER +1];
+  char complement[MAX_LENGTH_COMPLEMENT +1];
+  char district[MAX_LENGTH_DISTRICT +1]; 
+  char city[MAX_LENGTH_CITY +1];
+  char state[MAX_LENGTH_STATE +1];
+  char country[MAX_LENGTH_COUNTRY +1];
+  char zipCode[MAX_LENGTH_ZIP_CODE +1];
+} userAddressType; 
+
+typedef struct tUserDataType
+{
+  userIdType userId;
+  char userName[MAX_LENGTH_USERNAME +1];
+  char plainPass[MAX_LENGTH_PLAIN_PASS +1];
+  char encryptedPass[ENCRYPTED_PASS_LENGTH +1];
+  userCategoryType category;
+  char name[MAX_LENGTH_NAME +1];
+  char email[MAX_LENGTH_EMAIL +1];
+  char homepage[MAX_LENGTH_HOMEPAGE +1];
+  userAddressType address;
+  char telNumber[MAX_LENGTH_TEL_NUMBER +1];
+  char cellNumber[MAX_LENGTH_CELL_NUMBER +1];
+  genderType gender;
+  relationshipStatusType relationshipStatus;
+  char birthday[MAX_LENGTH_BIRTHDAY +1];
+  char description[MAX_LENGTH_DESCRIPTION +1];
+  struct tUserDataType *next;
+} userDataType;
+
+
+#endif
+
+// $RCSfile: types.h,v $
+@
+
+
+1.9
+log
+@tempUserDataType have been defined
+@
+text
+@d15 1
+a15 1
+ * $Date: 2004/12/14 02:55:21 $
+d17 3
+d43 1
+a43 1
+#define _TYPES_H_ "@@(#)types.h $Revision: 1.7 $"
+a90 32
+typedef struct
+{
+  char street[2*MAX_LENGTH_STREET +1];
+  char homeNumber[2*MAX_LENGTH_HOME_NUMBER +1];
+  char complement[2*MAX_LENGTH_COMPLEMENT +1];
+  char district[2*MAX_LENGTH_DISTRICT +1]; 
+  char city[2*MAX_LENGTH_CITY +1];
+  char state[2*MAX_LENGTH_STATE +1];
+  char country[2*MAX_LENGTH_COUNTRY +1];
+  char zipCode[2*MAX_LENGTH_ZIP_CODE +1];
+} tempUserAddressType; 
+
+typedef struct tempUserDataType
+{
+  userIdType userId;
+  char userName[2*MAX_LENGTH_USERNAME +1];
+  char plainPass[2*MAX_LENGTH_PLAIN_PASS +1];
+  char encryptedPass[2*ENCRYPTED_PASS_LENGTH +1];
+  userCategoryType category;
+  char name[2*MAX_LENGTH_NAME +1];
+  char email[2*MAX_LENGTH_EMAIL +1];
+  char homepage[2*MAX_LENGTH_HOMEPAGE +1];
+  tempUserAddressType address;
+  char telNumber[2*MAX_LENGTH_TEL_NUMBER +1];
+  char cellNumber[2*MAX_LENGTH_CELL_NUMBER +1];
+  genderType gender;
+  relationshipStatusType relationshipStatus;
+  char birthday[2*MAX_LENGTH_BIRTHDAY +1];
+  char description[2*MAX_LENGTH_DESCRIPTION +1];
+  struct tempUserDataType *next;
+} tempUserDataType;
+
+@
+
+
+1.8
+log
+@field 'notAnswered' added to genderType and relationshipType
+@
+text
+@d53 1
+a53 1
+typedef enum {notAnswered, single, married, widowed} relationshipStatusType;
+d88 32
+@
+
+
+1.7
+log
+@Grammar corrections have been made
+@
+text
+@d15 1
+a15 1
+ * $Date: 2004/12/13 08:02:03 $
+d17 3
+d40 1
+a40 1
+#define _TYPES_H_ "@@(#)types.h $Revision: 1.6 $"
+d52 2
+a53 2
+typedef enum {male, female} genderType;
+typedef enum {single, married, widowed} relationshipStatusType;
+@
+
+
+1.6
+log
+@Lines added: #undef false
+#undef true
+@
+text
+@d7 1
+a7 1
+// Author: Marcelo Duffles Donato Moreira
+d15 1
+a15 1
+ * $Date: 2004/12/11 12:38:50 $
+d17 4
+d37 1
+a37 1
+#define _TYPES_H_ "@@(#)types.h $Revision: 1.5 $"
+@
+
+
+1.5
+log
+@Author changed for 'marceloddm'
+@
+text
+@d15 1
+a15 1
+ * $Date: 2004/11/30 00:30:43 $
+d17 3
+d33 1
+a33 1
+#define _TYPES_H_ "@@(#)types.h $Revision: 1.4 $"
+d41 2
+d46 2
+a47 1
+typedef enum {unmarried, married, widowed} relationshipStatusType;
+d51 8
+a58 8
+  char street[MAX_LENGTH_STREET];
+  char homeNumber[MAX_LENGTH_HOME_NUMBER];
+  char complement[MAX_LENGTH_COMPLEMENT];
+  char district[MAX_LENGTH_DISTRICT]; 
+  char city[MAX_LENGTH_CITY];
+  char state[MAX_LENGTH_STATE];
+  char country[MAX_LENGTH_COUNTRY];
+  char zipCode[MAX_LENGTH_ZIP_CODE];
+d64 3
+a66 3
+  char userName[MAX_LENGTH_USERNAME];
+  char plainPass[MAX_LENGTH_PLAIN_PASS];
+  char encryptedPass[ENCRYPTED_PASS_MAX_LENGTH];
+d68 3
+a70 3
+  char name[MAX_LENGTH_NAME];
+  char email[MAX_LENGTH_EMAIL];
+  char homepage[MAX_LENGTH_HOMEPAGE];
+d72 2
+a73 2
+  char telNumber[MAX_LENGTH_TEL_NUMBER];
+  char cellNumber[MAX_LENGTH_CELL_NUMBER];
+d76 2
+a77 2
+  char birthday[MAX_LENGTH_BIRTHDAY];
+  char description[MAX_LENGTH_DESCRIPTION];
+@
+
+
+1.4
+log
+@Last modification: userDataType
+@
+text
+@d15 1
+a15 1
+ * $Date: 2004/11/27 00:30:11 $
+d17 4
+a20 1
+ * Revision 1.3  2004/11/27 00:30:11  marceloddm
+d23 1
+a23 1
+ * Revision 1.2  2004/11/26 13:52:39  marceloddm
+d30 1
+a30 1
+#define _TYPES_H_ "@@(#)types.h $Revision: 1.3 $"
+@
+
+
+1.3
+log
+@Next step: complete the missing spaces
+@
+text
+@d15 1
+a15 1
+ * $Date: 2004/11/26 13:52:39 $
+d17 3
+d27 4
+a30 1
+#define _TYPES_H_ "@@(#)types.h $Revision$"
+d45 1
+a45 1
+  char ???bairro[MAX_LENGTH_???BAIRRO];
+a49 2
+  char telNumber[MAX_LENGTH_TEL_NUMBER];
+  char celNumber{MAX_LENGTH_CEL_NUMBER]
+d58 4
+d63 7
+a69 1
+  tUserDataType *next
+d75 1
+a75 1
+// $RCSfile$
+@
+
+
+1.2
+log
+@RCS's strings added
+@
+text
+@d15 5
+a19 2
+ * $Date$
+ * $Log$
+d24 1
+a24 1
+#define _TYPES_H_
+d27 1
+d30 28
+d60 2
+@
+
+
+1.1
+log
+@Initial revision
+@
+text
+@d12 7
+@

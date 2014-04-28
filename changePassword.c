@@ -1,0 +1,144 @@
+//=================================================================//
+// Universidade Federal do Rio de Janeiro
+// Escola Politécnica
+// Departamento de Eletrônica e de Computação
+// Professor Marcelo Luiz Drumond Lanza
+// Computation II - Class 2004/2
+// Authors: Carlo Fragni and Marcelo Duffles Donato Moreira 
+// Description: changePassword() primary function source file 
+// Date: 28/12/2004
+//=================================================================//
+
+/* 
+ * RCS COMMENTS
+ *
+ * $Date: 2005/02/16 22:11:21 $
+ * $Log: changePassword.c,v $
+ * Revision 1.1  2005/02/16 22:11:21  marceloddm
+ * Initial revision
+ *
+ *
+ */
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <errno.h>
+#include <sys/errno.h>
+#include "const.h"
+#include "types.h"
+#include "error.h"
+#include "functions.h"
+#include "config.h"
+#include "changePassword.h"
+
+ 
+static const char rcsid [] = "$Id: changePassword.c,v 1.1 2005/02/16 22:11:21 marceloddm Exp marceloddm $";
+  
+unsigned changePassword ( userIdType userId , char * newPass)
+{
+  unsigned retCode, retCode2;
+  char passwordFileName[MAX_LENGTH_LONG_FILENAME +1];
+  char tempFileName[MAX_LENGTH_LONG_FILENAME +1];
+  char encryptedNewPassword [ENCRYPTED_PASS_LENGTH + 1];
+  FILE *readFile, *writeFile;
+  userDataType buffer;
+  boolean found;
+  
+  if(( retCode = checkField ( newPass , PLAIN_PASS_VALID_CHARACTERS, MIN_LENGTH_PLAIN_PASS, MAX_LENGTH_PLAIN_PASS)) != OK)
+    return ( retCode );
+  
+ /*PREPARING TO MAKE CHANGES IN THE PASSWORD FILE*/
+   
+ if ((retCode = getLongFilename (DATA_DIR, PASSWORD_FILE_NAME, passwordFileName)) != OK)
+    return (retCode);
+    
+  if ((readFile = fopen (passwordFileName, "r")) == NULL)
+  {
+    if (errno != ENOENT)
+      return (CHANGE_PASSWORD__ERROR_OPENING_PASSWORD_FILE_FOR_READING);
+    return (CHANGE_PASSWORD__PASSWORD_FILE_DOES_NOT_EXIST);
+  } 
+  
+  if ((retCode = getLongFilename (DATA_DIR, PASSWORD_TEMP_FILE_NAME, tempFileName)) != OK)
+  {
+    fclose (readFile);
+    return (retCode);
+  }  
+    
+  if ((writeFile = fopen (tempFileName, "w")) == NULL)
+  {
+    fclose ( readFile );
+    return (CHANGE_PASSWORD__ERROR_OPENING_PASSWORD_TEMP_FILE_FOR_WRITTING);   
+  }
+     
+  found = false;
+  
+  for (retCode = 0; retCode != GET_USER_ID__END_OF_FILE;)  
+  {
+    if ((retCode = getUserData (readFile, PASSWORD_FILE_NAME, &buffer)) != OK) /*READING PASSWORD FILE*/
+      if (retCode != GET_USER_ID__END_OF_FILE)
+      {
+        fclose (readFile);
+	fclose (writeFile);
+	remove (tempFileName);
+        return (retCode);
+      }
+    if (retCode != GET_USER_ID__END_OF_FILE) 
+    {
+      if ( buffer.userId != userId ) /*JUST COPYING THE OTHER USERS DATA*/
+      {
+	if ((retCode2 = putUserData ( writeFile, PASSWORD_TEMP_FILE_NAME, &buffer )) != OK )
+        {
+	  fclose (readFile);
+	  fclose (writeFile);
+	  remove (tempFileName);
+	  return (retCode2);
+        }
+      }
+      if ( buffer.userId == userId )
+      {  
+        /*ENCRYPTING NEW PASSWORD*/
+	if ((retCode2 = encodePassword ( newPass, encryptedNewPassword) ) != OK )
+	{
+	  fclose (readFile);
+	  fclose (writeFile);
+	  remove (tempFileName);
+	  return (retCode2);
+	}
+	
+	stringCopy (buffer.encryptedPass, encryptedNewPassword, ENCRYPTED_PASS_LENGTH);
+	
+	/*UPDATING PASSWORD FILE WITH NEW PASSWORD*/
+	if ((retCode2 = putUserData ( writeFile, PASSWORD_TEMP_FILE_NAME, &buffer )) != OK )
+        {
+	  fclose (readFile);
+	  fclose (writeFile);
+	  remove (tempFileName);
+	  return (retCode2);
+        }
+	
+	found = true;
+      }
+    }  
+  }
+  
+  fclose ( readFile);
+  fclose ( writeFile);
+  
+  if (! found ) /*NO USER FOUND WITH THE GIVEN USER ID IN THE PASSWORD FILE*/
+  {
+    remove (tempFileName);
+    return ( CHANGE_PASSWORD__USER_NOT_FOUND );
+  }
+  
+  /*REPLACING FILES */
+  
+  rename (tempFileName, passwordFileName);
+      
+  return (OK);      
+}
+
+/*$RCSfile: changePassword.c,v $*/
+
+

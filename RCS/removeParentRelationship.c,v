@@ -1,0 +1,184 @@
+head	1.1;
+access;
+symbols;
+locks
+	marceloddm:1.1; strict;
+comment	@ * @;
+
+
+1.1
+date	2005.02.16.22.11.21;	author marceloddm;	state Exp;
+branches;
+next	;
+
+
+desc
+@removeParentRelationship() primary function source code
+@
+
+
+1.1
+log
+@Initial revision
+@
+text
+@//=================================================================//
+// Universidade Federal do Rio de Janeiro
+// Escola Politécnica
+// Departamento de Eletrônica e de Computação
+// Professor Marcelo Luiz Drumond Lanza
+// Computation II - Class 2004/2
+// Authors: Carlo Fragni and Marcelo Duffles Donato Moreira 
+// Description: Source file of the primary function removeParentRelationship().
+// Date: 28/12/2004
+//=================================================================//
+
+/* 
+ * RCS COMMENTS
+ *
+ * $Date$
+ * $Log$
+ */
+
+ 
+#include <stdio.h> 
+#include <stdlib.h>
+#include <string.h>
+#include <errno.h>
+#include <sys/errno.h>
+#include "const.h"
+#include "types.h"
+#include "config.h"
+#include "error.h"
+#include "functions.h"
+#include "removeParentRelationship.h"
+  
+static const char rcsid [] = "$Id$";
+  
+unsigned removeParentRelationship ( userIdType sonOrDaughterId, userIdType fatherOrMotherId)
+{
+  unsigned retCode, retCode2;
+  char parentsFileName [MAX_LENGTH_LONG_FILENAME +1];
+  char parentsFileNameTmp [MAX_LENGTH_LONG_FILENAME +1];
+  FILE *rParentsFile, *wParentsFile;
+  userIdType buffer, bufferTwo;
+  userDataType userData;
+  boolean found;
+  
+  if ((retCode = getDataFromId (sonOrDaughterId, &userData)) != OK)
+    return (retCode);
+  if ((retCode = getDataFromId (fatherOrMotherId, &userData)) != OK)
+    return (retCode);
+      
+  /*TESTAR PERMISSIVIDADE DA EXCLUSÃO NA CHAMADA*/
+  /*TESTE DA ÁRVORE NÃO FEITO*/
+      
+  /*PERFORMING NEEDED OPERATIONS IN THE PARENTS FILE*/ 
+  
+  if ((retCode = getLongFilename (DATA_DIR, PARENTS_FILE_NAME , parentsFileName)) != OK)
+    return (retCode);
+
+  if ((rParentsFile = fopen (parentsFileName, "r")) == NULL)
+  {
+    if (errno != ENOENT)
+      return (REMOVE_PARENT_RELATIONSHIP__ERROR_OPENING_PARENTS_FILE_FOR_READING);
+    return (REMOVE_PARENT_RELATIONSHIP__PARENTS_FILE_DOES_NOT_EXIST);
+  }
+
+  if ((retCode = getLongFilename (DATA_DIR, PARENTS_TEMP_FILE_NAME , parentsFileNameTmp)) != OK)
+    return (retCode);
+
+  if ((wParentsFile = fopen (parentsFileNameTmp , "w")) == NULL)
+  {
+    fclose ( rParentsFile );
+    return (REMOVE_PARENT_RELATIONSHIP__ERROR_OPENING_PARENTS_TEMP_FILE_FOR_WRITING);
+  }
+  
+  found = false;
+     
+  for (retCode = 0; retCode != GET_USER_ID__END_OF_FILE;)  
+  {
+    if ((retCode = getUserId ( rParentsFile, &buffer)) != OK )
+    {
+      if (retCode != GET_USER_ID__END_OF_FILE)
+      {
+        fclose (rParentsFile);
+        fclose (wParentsFile);
+        remove (parentsFileNameTmp);
+        return (retCode);
+      }
+    }
+    if ((retCode = getUserId ( rParentsFile, &bufferTwo)) != OK )
+    {
+      if (retCode != GET_USER_ID__END_OF_FILE)
+      {
+        fclose (rParentsFile);
+        fclose (wParentsFile);
+        remove (parentsFileNameTmp);
+        return (retCode);
+      }
+    }    
+    if (retCode != GET_USER_ID__END_OF_FILE) /*SEARCH FOR THE POSITION WHERE THE PARENT RELATIONSHIP IS GOING TO BE REMOVED*/
+    {  
+      if ( buffer != sonOrDaughterId ) /*IT`S IN THE POSITION WHERE THE PARENT RELATIONSHIP SHOULD BE INCLUDED*/
+      {
+        if ((retCode2 = putUserId (wParentsFile, &buffer)) != OK )
+        {
+          fclose (rParentsFile);
+          fclose (wParentsFile);
+          remove (parentsFileNameTmp);
+	  return (retCode2);
+        }
+	if ((retCode2 = putUserId (wParentsFile, &bufferTwo)) != OK )
+        {
+          fclose (rParentsFile);
+          fclose (wParentsFile);
+          remove (parentsFileNameTmp);
+	  return (retCode2);
+        }
+      }    
+      if ( buffer == sonOrDaughterId )
+      {
+        if ( bufferTwo == fatherOrMotherId )
+	  found = true;
+	if ( bufferTwo != fatherOrMotherId )
+	{
+	  if ((retCode2 = putUserId (wParentsFile, &buffer)) != OK )
+          {
+            fclose (rParentsFile);
+            fclose (wParentsFile);
+            remove (parentsFileNameTmp);
+	    return (retCode2);
+          }
+	  if ((retCode2 = putUserId (wParentsFile, &bufferTwo)) != OK )
+          {
+            fclose (rParentsFile);
+            fclose (wParentsFile);
+            remove (parentsFileNameTmp);
+	    return (retCode2);
+          }
+	}
+      }
+    }            
+  }
+  
+  if (! found ) 
+  {
+    fclose (rParentsFile);
+    fclose (wParentsFile);
+    remove (parentsFileNameTmp);
+    return ( REMOVE_PARENT_RELATIONSHIP__GIVEN_PARENT_RELATIONSHIP_NOT_FOUND );
+  }
+    
+  /*RENAMEING THE TEMP FILE NAMES TO REPLACE DE OLD ONES*/
+  fclose (rParentsFile);
+  fclose (wParentsFile);
+  rename (parentsFileNameTmp, parentsFileName);
+   
+  return (OK);      
+}
+
+/*$RCSfile$*/
+
+
+@

@@ -1,0 +1,1545 @@
+head	1.14;
+access;
+symbols;
+locks
+	marceloddm:1.14; strict;
+comment	@ * @;
+
+
+1.14
+date	2005.02.16.22.11.21;	author marceloddm;	state Exp;
+branches;
+next	1.13;
+
+1.13
+date	2004.12.24.03.42.16;	author marceloddm;	state Exp;
+branches;
+next	1.12;
+
+1.12
+date	2004.12.20.12.50.59;	author marceloddm;	state Exp;
+branches;
+next	1.11;
+
+1.11
+date	2004.12.19.18.47.39;	author marceloddm;	state Exp;
+branches;
+next	1.10;
+
+1.10
+date	2004.12.17.13.38.46;	author marceloddm;	state Exp;
+branches;
+next	1.9;
+
+1.9
+date	2004.12.16.00.28.35;	author marceloddm;	state Exp;
+branches;
+next	1.8;
+
+1.8
+date	2004.12.15.20.31.45;	author marceloddm;	state Exp;
+branches;
+next	1.7;
+
+1.7
+date	2004.12.15.01.36.37;	author marceloddm;	state Exp;
+branches;
+next	1.6;
+
+1.6
+date	2004.12.14.02.52.06;	author marceloddm;	state Exp;
+branches;
+next	1.5;
+
+1.5
+date	2004.12.13.08.00.01;	author marceloddm;	state Exp;
+branches;
+next	1.4;
+
+1.4
+date	2004.12.11.12.38.31;	author marceloddm;	state Exp;
+branches;
+next	1.3;
+
+1.3
+date	2004.11.30.00.29.48;	author marceloddm;	state Exp;
+branches;
+next	1.2;
+
+1.2
+date	2004.11.29.20.34.36;	author marceloddm;	state Exp;
+branches;
+next	1.1;
+
+1.1
+date	2004.11.28.13.58.52;	author marceloddm;	state Exp;
+branches;
+next	;
+
+
+desc
+@Main program source file
+@
+
+
+1.14
+log
+@CGI's added
+@
+text
+@//===========================================================================//
+// Universidade Federal do Rio de Janeiro
+// Escola Politécnica
+// Departamento de Eletrônica e de Computação
+// Professor Marcelo Luiz Drumond Lanza
+// Computation II - Class 2004/2
+// Authors: Carlo Fragni and Marcelo Duffles Donato Moreira
+// Description: Main program source file 
+// Date: 29/11/2004
+//===========================================================================//
+
+/* 
+ * RCS COMMENTS
+ *
+ * $Date: 2004/12/24 03:42:16 $
+ * $Log: relationshipSystem.c,v $
+ * Revision 1.13  2004/12/24 03:42:16  marceloddm
+ * ncursesMenu() function added
+ *
+ * Revision 1.12  2004/12/20 12:50:59  marceloddm
+ * Code of 'g' option has been added
+ *
+ * Revision 1.11  2004/12/19 18:47:39  marceloddm
+ * RELATIONSHIP_SYSTEM__NO_OPTION_SELECTED constant added
+ *
+ * Revision 1.10  2004/12/17 13:38:46  marceloddm
+ * Code of 'edit' option added
+ *
+ * Revision 1.9  2004/12/16 00:28:35  marceloddm
+ * Bugs have been solved!
+ * We have to remember to replace the getchar() function by another with better performace
+ *
+ * Revision 1.8  2004/12/15 20:31:45  marceloddm
+ * The program can be reinstalled now!
+ *
+ * Revision 1.7  2004/12/15 01:36:37  marceloddm
+ * Bugs have been solved, but we still with problems with getchar() function and when reinstalling the system
+ * The copyDataToUserData() function have been added to the code
+ *
+ * Revision 1.6  2004/12/14 02:52:06  marceloddm
+ * New functions like backupSystemFiles() have been added
+ * The code have been modified, but we have not complete the implementation of install() function...
+ * Next step: fill the userData variable with dada given by command line.
+ *
+ * Revision 1.5  2004/12/13 08:00:01  marceloddm
+ * Alterations have been done --> install() function
+ *
+ * Revision 1.4  2004/12/11 12:38:31  marceloddm
+ * Author changed for 'marceloddm'
+ *
+ * Revision 1.3  2004/11/30 00:29:48  root
+ * Help option is done
+ *
+ * Revision 1.2  2004/11/29 20:34:36  root
+ * Main program source file
+ *
+ * Revision 1.1  2004/11/28 13:58:52  root
+ * Initial revision
+ *
+ */ 
+ 
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <getopt.h>
+#include <unistd.h>
+#include <string.h>
+#include <sys/errno.h>
+#include <errno.h>
+#include "functions.h"
+#include "const.h"
+#include "error.h"
+#include "help.h"
+#include "types.h"
+#include "install.h"
+#include "config.h"
+#include "editUserData.h"
+#include "getUsers.h"
+#include "addUser.h"
+#include "removeUser.h"
+#include "inviteUser.h"
+#include "acceptFriendshipInvitation.h"
+#include "rejectFriendshipInvitation.h"
+#include "getFriendshipInvitation.h"
+#include "inviteFriend.h"
+#include "excludeFriend.h"
+#include "recoveryPassword.h"
+#include "changePassword.h"
+#include "getFriends.h"
+#include "addParentRelationship.h"
+#include "removeParentRelationship.h"
+#include "editParentRelationship.h"
+#include "changeUserCategory.h"
+#include "ncursesMenu.h"
+
+ 
+static const char rcsid[] = "$Id: relationshipSystem.c,v 1.13 2004/12/24 03:42:16 marceloddm Exp marceloddm $";
+
+int main (int argc, char **argv)
+{
+  char stringOptions[] = "nhtaeriIFPJXGcAREgmpCu";
+  char password[MAX_LENGTH_PLAIN_PASS +1];
+  char newPassword[MAX_LENGTH_PLAIN_PASS +1];
+  char passwordFilename[MAX_LENGTH_LONG_FILENAME +1];
+  int option, command, answer;
+  unsigned errorCode, errorCodeBackup, nbArgs;
+  FILE *passwordFile;
+  boolean reinstall;
+  userDataType userData, administratorData, buffer;
+  userDataType *first, *last;
+  
+  
+  static struct option longOptions[] = 
+  {
+    {"ncurses",   0, 0, 'n'},
+    {"help",      0, 0, 'h'},
+    {"install",   0, 0, 't'},
+    {"add",       0, 0, 'a'},
+    {"edit",      0, 0, 'e'},
+    {"remove",    0, 0, 'r'},
+    {"invite",    0, 0, 'i'},
+    {"Invite",    0, 0, 'I'},
+    {"Friendship",0, 0, 'F'}, 
+    {"Accept",    0, 0, 'P'},
+    {"Reject",    0, 0, 'J'},
+    {"Exclude",   0, 0, 'X'},
+    {"Get",       0, 0, 'G'},
+    {"change",    0, 0, 'c'},
+    {"Add",       0, 0, 'A'},
+    {"Remove",    0, 0, 'R'},
+    {"Edit",      0, 0, 'E'},
+    {"get",       0, 0, 'g'},
+    {"mount",     0, 0, 'm'},
+    {"password",  0, 0, 'p'},
+    {"Change",    0, 0, 'C'},
+    {"upload",    0, 0, 'u'},
+    {0, 0, 0, 0}
+  };
+  
+  
+  if (argc == 1)
+  {
+    system ("clear");
+    printf ("%s\n", showTextHelpMessage (RELATIONSHIP_SYSTEM__WELCOME_MESSAGE));
+    shortHelp ();
+    exit (OK);
+  }
+  
+  opterr = 0;
+  if ((option = getopt_long (argc, argv, stringOptions, longOptions, &command)) == -1)
+  {
+    printf ("\n%s\n\n", showTextErrorMessage (RELATIONSHIP_SYSTEM__NO_OPTION_SELECTED));
+    exit (RELATIONSHIP_SYSTEM__NO_OPTION_SELECTED);
+  }
+  if (argv[1][0] != '-')
+  {
+    printf ("\n%s\n\n", showTextHelpMessage (RELATIONSHIP_SYSTEM__OPTION_MUST_COME_FIRST));
+    exit (RELATIONSHIP_SYSTEM__OPTION_MUST_COME_FIRST);
+  }
+  if ((getopt_long (argc, argv, stringOptions, longOptions, &command)) != -1)
+  {
+    printf ("\n%s\n\n", showTextErrorMessage (RELATIONSHIP_SYSTEM__MORE_THAN_ONE_OPTION));
+    exit (RELATIONSHIP_SYSTEM__MORE_THAN_ONE_OPTION);
+  }
+  
+  nbArgs = argc - optind; 
+      
+  if ((option!='?') && (option != -1) && (option != 'h'))
+  {
+    if ((errorCode = getAdministratorPassword (password)) != OK)
+    {
+      printf ("\n%s\n\n", showTextErrorMessage (errorCode));
+      exit (errorCode);
+    }
+    if ((errorCode = getLongFilename (DATA_DIR, PASSWORD_FILE_NAME, passwordFilename)) != OK)
+    {
+      printf ("\n%s\n\n", showTextErrorMessage (errorCode));
+      exit (errorCode);
+    }
+    if ((passwordFile = fopen (passwordFilename, "r")) == NULL)
+    {
+      if (errno != ENOENT)
+      {
+	printf ("\n%s\n\n", showTextErrorMessage (RELATIONSHIP_SYSTEM__ERROR_OPENING_PASSWORD_FILE_FOR_READING));
+	exit (RELATIONSHIP_SYSTEM__ERROR_OPENING_PASSWORD_FILE_FOR_READING);
+      }
+      if (option != 't')
+      {
+        printf ("\n%s\n\n", showTextErrorMessage (RELATIONSHIP_SYSTEM__NOT_YET_INSTALLED));
+        exit (RELATIONSHIP_SYSTEM__NOT_YET_INSTALLED);
+      }
+    }
+    else  
+    {
+      if ((errorCode = getUserData (passwordFile, PASSWORD_FILE_NAME, &administratorData)) != OK) 
+      {
+        printf ("\n%s\n\n", showTextErrorMessage (errorCode));
+        fclose (passwordFile);
+        exit (errorCode);
+      }
+      fclose (passwordFile);
+      if ((errorCode = checkPassword (administratorData.encryptedPass, password)) != OK)
+      {
+        printf ("\n%s\n\n", showTextErrorMessage (errorCode));
+        exit (errorCode);
+      }
+    }
+  }
+  
+  switch (option)
+  {
+  
+/*--------------------------------------------------------------------------------------------------------------------*/
+  
+    case 'n':
+      errorCode = ncursesMenu ();
+      system ("clear");
+      printf ("\n%s\n\n", showTextErrorMessage (errorCode));
+      exit (errorCode);
+    break;
+	
+/*--------------------------------------------------------------------------------------------------------------------*/
+	
+    case 'h':
+      system ("clear");
+      printf ("\n%s\n\n", showTextHelpMessage (RELATIONSHIP_SYSTEM__WELCOME_MESSAGE));
+      help ();
+    break;
+	
+/*--------------------------------------------------------------------------------------------------------------------*/
+	    
+    case 't':
+      if (nbArgs != NB_ARGS_OF_INSTALL_OPTION)
+      {
+        printf ("\n%s\n\n", showTextErrorMessage (RELATIONSHIP_SYSTEM__NB_ARGS_OF_INSTALL_OPTION));
+	exit (RELATIONSHIP_SYSTEM__NB_ARGS_OF_INSTALL_OPTION);
+      }
+      if ((errorCode = fillUserData (&administratorData, argv, password)) != OK)
+      {
+        printf ("\n%s\n\n", showTextErrorMessage (errorCode));
+	exit (errorCode);
+      } 
+      for (reinstall = true; reinstall;)
+        if ((errorCode = install (&administratorData)) != OK)
+        {
+          printf ("\n%s\n", showTextErrorMessage (errorCode));
+          if (errorCode == INSTALL__SYSTEM_ALREADY_INSTALLED)
+	  {
+	    printf ("\n%s", showTextHelpMessage (QUESTION_OF_REINSTALL));
+	    #ifdef ENGLISH
+	      while (((answer = getchar ()) != 'y') && (answer != 'Y') && (answer != 'n') && (answer != 'N'))
+	        printf ("\n%s", showTextHelpMessage (QUESTION_OF_REINSTALL));
+	    #elif PORTUGUESE
+	      while (((answer = getchar ()) != 's') && (answer != 'S') && (answer != 'n') && (answer != 'N'))
+	      printf ("\n%s", showTextHelpMessage (QUESTION_OF_REINSTALL));
+	    #endif
+	  
+	    if ((answer == 'n') || (answer =='N'))
+	    {
+	      reinstall = false;
+	      printf ("\n%s\n\n", showTextHelpMessage (RELATIONSHIP_SYSTEM__CONFIRMATION_OF_DO_NOT_REINSTALL));
+	    }
+	    else
+	    {
+	      if ((errorCodeBackup = backupSystemFiles ()) != OK)
+	      {
+	        printf ("\n%s\n\n", showTextErrorMessage (errorCodeBackup));
+	        exit (errorCodeBackup);
+	      }
+	      reinstall = true;
+	    }
+	  }
+	  else
+	    exit (errorCode);
+        }
+        else
+	{
+	  reinstall = false;
+          printf ("\n%s\n\n", showTextHelpMessage (INSTALLATION_DONE_SUCCESSFULLY));
+	}
+    break;
+	
+/*--------------------------------------------------------------------------------------------------------------------*/
+	
+    case 'a':
+      if (nbArgs != NB_ARGS_OF_ADD_OPTION)
+      {
+        printf ("\n%s\n\n", showTextErrorMessage (RELATIONSHIP_SYSTEM__WRONG_NB_ARGS_OF_ADD_OPTION));
+	exit (RELATIONSHIP_SYSTEM__WRONG_NB_ARGS_OF_ADD_OPTION);
+      }
+      printf ("\n");
+      
+      #ifdef ENGLISH
+        if ((!strcmp (argv[3], "webUser")) || (!strcmp (argv[3], "2")))
+          userData.category = webUser;
+        else if ((!strcmp (argv[3], "relative")) || (!strcmp (argv[3], "3")))
+          userData.category = relative;
+      #elif PORTUGUESE
+        if ((!strcmp (argv[3], "usuarioWeb")) || (!strcmp (argv[3], "2")))
+          userData.category = webUser;
+        else if ((!strcmp (argv[3], "parente")) || (!strcmp (argv[3], "3")))
+          userData.category = relative;
+      #endif
+      
+      if (userData.category == webUser)
+      {
+        stringCopy (newPassword, getpass (showTextHelpMessage (RELATIONSHIP_SYSTEM__PROMPT_OF_PASSWORD)), MAX_LENGTH_PLAIN_PASS); 
+        printf ("\n");
+        if (strcmp (newPassword, getpass (showTextHelpMessage (RELATIONSHIP_SYSTEM__PROMPT_OF_CONFIRMATION))))
+        {
+          printf ("\n%s\n\n", showTextErrorMessage (RELATIONSHIP_SYSTEM__LOGIN_INCORRECT_OF_NEW_USER));
+          exit (RELATIONSHIP_SYSTEM__LOGIN_INCORRECT_OF_NEW_USER);
+        }
+        printf ("\n");
+      }
+      
+      if ((errorCode = fillUserData (&userData, argv, newPassword)) != OK)
+      {
+        printf ("\n%s\n\n", showTextErrorMessage (errorCode));
+	exit (errorCode);
+      }
+      errorCode = addUser (&userData); 
+      printf ("\n%s\n\n", showTextErrorMessage (errorCode));
+      exit (errorCode);
+    break;
+	
+/*--------------------------------------------------------------------------------------------------------------------*/
+	
+    case 'e':
+      if (nbArgs != NB_ARGS_OF_EDIT_OPTION)
+      {
+        printf ("\n%s\n\n", showTextErrorMessage (RELATIONSHIP_SYSTEM__NB_ARGS_OF_EDIT_OPTION));
+	exit (RELATIONSHIP_SYSTEM__NB_ARGS_OF_EDIT_OPTION);
+      } 
+      if ((errorCode = getDataFromId ((userIdType) strtoul (argv[2], NULL, 10), &userData)) != OK)
+      {
+        printf ("\n%s\n\n", showTextErrorMessage (errorCode));
+	exit (errorCode);
+      }
+      if ((errorCode = fillUserData (&userData, argv, NULL)) != OK)
+      {
+        printf ("\n%s\n\n", showTextErrorMessage (errorCode));
+	exit (errorCode);
+      }      
+      errorCode = editUserData (&userData);
+      printf ("\n%s\n\n", showTextErrorMessage (errorCode));
+      exit (errorCode);
+    break;
+	
+/*--------------------------------------------------------------------------------------------------------------------*/
+	    
+    case 'r':
+      if (nbArgs != NB_ARGS_OF_REMOVE_USER_OPTION)
+      {
+        printf ("\n%s\n\n", showTextErrorMessage (RELATIONSHIP_SYSTEM__WRONG_NB_ARGS_OF_REMOVE_USER_OPTION));
+	exit (RELATIONSHIP_SYSTEM__WRONG_NB_ARGS_OF_REMOVE_USER_OPTION);
+      } 
+      errorCode = removeUser ((userIdType) strtoul (argv[2], NULL, 10));
+      printf ("\n%s\n\n", showTextErrorMessage (errorCode));
+      exit (errorCode);
+    break;
+	
+/*--------------------------------------------------------------------------------------------------------------------*/
+	
+    case 'i':
+      if (nbArgs != NB_ARGS_OF_INVITE_USER_OPTION)
+      {
+        printf ("\n%s\n\n", showTextErrorMessage (RELATIONSHIP_SYSTEM__WRONG_NB_ARGS_OF_INVITE_USER_OPTION));
+	exit (RELATIONSHIP_SYSTEM__WRONG_NB_ARGS_OF_INVITE_USER_OPTION);
+      } 
+      errorCode = inviteUser (strtoul (argv[2], NULL, 10), argv[3], argv[4]);
+      printf ("\n%s\n\n", showTextErrorMessage (errorCode));
+      exit (errorCode);
+    break;
+	
+/*--------------------------------------------------------------------------------------------------------------------*/
+	
+    case 'I':
+      if (nbArgs != NB_ARGS_OF_INVITE_FRIEND_OPTION)
+      {
+        printf ("\n%s\n\n", showTextErrorMessage (RELATIONSHIP_SYSTEM__WRONG_NB_ARGS_OF_INVITE_FRIEND_OPTION));
+	exit (RELATIONSHIP_SYSTEM__WRONG_NB_ARGS_OF_INVITE_FRIEND_OPTION);
+      } 
+      errorCode = inviteFriend ((userIdType) strtoul (argv[2], NULL, 10), (userIdType) strtoul (argv[3], NULL, 10));
+      printf ("\n%s\n\n", showTextErrorMessage (errorCode));
+      exit (errorCode);
+    break;    
+	
+/*--------------------------------------------------------------------------------------------------------------------*/
+	
+    case 'F':
+      if (nbArgs != NB_ARGS_OF_GET_FRIENDSHIP_INVITATION_OPTION)
+      {
+        printf ("\n%s\n\n", showTextErrorMessage (RELATIONSHIP_SYSTEM__WRONG_NB_ARGS_OF_GET_FRIENDSHIP_INVITATION_OPTION));
+	exit (RELATIONSHIP_SYSTEM__WRONG_NB_ARGS_OF_GET_FRIENDSHIP_INVITATION_OPTION);
+      } 
+      if ((errorCode = getFriendshipInvitation ((userIdType) strtoul (argv[2], NULL, 10), &first )) != OK)
+      {
+        printf ("\n%s\n\n", showTextErrorMessage (errorCode));
+	exit (errorCode);
+      }
+      while (retrieveFIFO ( &first, &last, &buffer ) == OK)
+      {
+        #ifdef ENGLISH 
+          printf ( "\nUser: %s  -->  Id: %llu", buffer.name , buffer.userId );
+	#elif PORTUGUESE
+	  printf ( "\nUsuário: %s  -->  Id: %llu", buffer.name , buffer.userId );
+	#endif
+      }
+      freeFIFOResources (&first, &last);
+      printf ("\n\n%s\n\n", showTextErrorMessage (OK));
+    break;    
+	
+/*--------------------------------------------------------------------------------------------------------------------*/
+	
+    case 'P':
+      if (nbArgs != NB_ARGS_OF_ACCEPT_OPTION)
+      {
+        printf ("\n%s\n\n", showTextErrorMessage (RELATIONSHIP_SYSTEM__WRONG_NB_ARGS_OF_ACCEPT_OPTION));
+	exit (RELATIONSHIP_SYSTEM__WRONG_NB_ARGS_OF_ACCEPT_OPTION);
+      } 
+      errorCode = acceptFriendshipInvitation ((userIdType) strtoul (argv[optind], NULL, 10), (userIdType) strtoul (argv[optind +1], NULL, 10));
+      printf ("\n%s\n\n", showTextErrorMessage (errorCode));
+      exit (errorCode);
+    break;
+	
+/*--------------------------------------------------------------------------------------------------------------------*/
+	
+    case 'J':
+      if (nbArgs != NB_ARGS_OF_REJECT_OPTION)
+      {
+        printf ("\n%s\n\n", showTextErrorMessage (RELATIONSHIP_SYSTEM__WRONG_NB_ARGS_OF_REJECT_OPTION));
+	exit (RELATIONSHIP_SYSTEM__WRONG_NB_ARGS_OF_REJECT_OPTION);
+      } 
+      errorCode = rejectFriendshipInvitation ((userIdType) strtoul (argv[optind], NULL, 10), (userIdType) strtoul (argv[optind +1], NULL, 10));
+      printf ("\n%s\n\n", showTextErrorMessage (errorCode));
+      exit (errorCode);
+    break;
+	
+/*--------------------------------------------------------------------------------------------------------------------*/
+	
+    case 'X':
+      if (nbArgs != NB_ARGS_OF_EXCLUDE_OPTION)
+      {
+        printf ("\n%s\n\n", showTextErrorMessage (RELATIONSHIP_SYSTEM__WRONG_NB_ARGS_OF_EXCLUDE_OPTION));
+	exit (RELATIONSHIP_SYSTEM__WRONG_NB_ARGS_OF_EXCLUDE_OPTION);
+      } 
+      errorCode = excludeFriend ((userIdType) strtoul (argv[2], NULL, 10), (userIdType) strtoul (argv[3], NULL, 10));
+      printf ("\n%s\n\n", showTextErrorMessage (errorCode));
+      exit (errorCode);
+    break;
+	
+/*--------------------------------------------------------------------------------------------------------------------*/
+	
+    case 'G':
+      if (nbArgs != NB_ARGS_OF_GET_FRIENDS_OPTION)
+      {
+        printf ("\n%s\n\n", showTextErrorMessage (RELATIONSHIP_SYSTEM__WRONG_NB_ARGS_OF_GET_FRIENDS_OPTION));
+	exit (RELATIONSHIP_SYSTEM__WRONG_NB_ARGS_OF_GET_FRIENDS_OPTION);
+      } 
+      if ((errorCode = getFriends ((userIdType) strtoul (argv[2], NULL, 10), &first )) != OK)
+      {
+        printf ("\n%s\n\n", showTextErrorMessage (errorCode));
+	exit (errorCode);
+      }
+      while (retrieveFIFO (&first, &last, &buffer) == OK)
+      {
+        #ifdef ENGLISH 
+          printf ( "\nUser: %s  -->  Id: %llu", buffer.name , buffer.userId );
+	#elif PORTUGUESE
+	  printf ( "\nUsuário: %s  -->  Id: %llu", buffer.name , buffer.userId );
+	#endif
+      }
+      freeFIFOResources (&first, &last);
+      printf ("\n\n%s\n\n", showTextErrorMessage (OK));
+    break;
+	
+/*--------------------------------------------------------------------------------------------------------------------*/
+	
+    case 'c':
+      if (nbArgs != NB_ARGS_OF_CHANGE_CATEGORY_OPTION)
+      {
+        printf ("\n%s\n\n", showTextErrorMessage (RELATIONSHIP_SYSTEM__WRONG_NB_ARGS_OF_CHANGE_CATEGORY_OPTION));
+	exit (RELATIONSHIP_SYSTEM__WRONG_NB_ARGS_OF_CHANGE_CATEGORY_OPTION);
+      } 
+      
+      if ((errorCode = getDataFromId ( (userIdType) strtoul (argv[optind], NULL, 10) , &buffer )) != OK )
+      {
+        printf ("\n%s\n\n", showTextErrorMessage (errorCode));
+        exit (errorCode);
+      }
+      
+      if ( buffer.category == relative )
+      {
+        printf ("\n%s ", showTextHelpMessage (USERNAME_FIELD_DESCRIPTION));
+	fgets ( buffer.userName , MAX_LENGTH_USERNAME , stdin );
+	if (buffer.userName[strlen (buffer.userName) -1] == '\n')
+	  buffer.userName[strlen (buffer.userName) -1] = EOS;
+	printf ("\n");
+	stringCopy (buffer.plainPass, getpass (showTextHelpMessage (REQUIRE_NEW_WEB_USER_PASSWORD)), MAX_LENGTH_PLAIN_PASS);
+	printf ("\n%s ", showTextHelpMessage (EMAIL_FIELD_DESCRIPTION));
+	fgets ( buffer.email , MAX_LENGTH_EMAIL , stdin );
+	if (buffer.email[strlen (buffer.email) -1] == '\n')
+	  buffer.email[strlen (buffer.email) -1] = EOS;
+	printf ("\n");
+	buffer.category = webUser;
+      }
+      else
+        if ( buffer.category == webUser )
+          buffer.category = relative;
+      
+      if ((errorCode = changeUserCategory ( &buffer ) ) != OK )
+      {
+        printf ("\n%s\n\n", showTextErrorMessage (errorCode));
+        exit (errorCode);
+      }
+      printf ("\n%s\n\n", showTextErrorMessage (OK));
+    break;
+	
+/*--------------------------------------------------------------------------------------------------------------------*/
+	
+    case 'A':
+      if (nbArgs != NB_ARGS_OF_ADD_PARENT_OPTION)
+      {
+        printf ("\n%s\n\n", showTextErrorMessage (RELATIONSHIP_SYSTEM__WRONG_NB_ARGS_OF_ADD_PARENT_OPTION));
+	exit (RELATIONSHIP_SYSTEM__WRONG_NB_ARGS_OF_ADD_PARENT_OPTION);
+      } 
+      if ((errorCode = addParentRelationship ((userIdType) strtoul (argv[2], NULL, 10), (userIdType) strtoul (argv[3], NULL, 10))) != OK )
+      {
+        printf ("\n%s\n\n", showTextErrorMessage (errorCode));
+        exit (errorCode);
+      }
+      printf ("\n%s\n\n", showTextErrorMessage (OK));
+    break;
+	
+/*--------------------------------------------------------------------------------------------------------------------*/
+	
+    case 'R':
+      if (nbArgs != NB_ARGS_OF_REMOVE_PARENT_OPTION)
+      {
+        printf ("\n%s\n\n", showTextErrorMessage (RELATIONSHIP_SYSTEM__WRONG_NB_ARGS_OF_REMOVE_PARENT_OPTION));
+	exit (RELATIONSHIP_SYSTEM__WRONG_NB_ARGS_OF_REMOVE_PARENT_OPTION);
+      } 
+      if ((errorCode = removeParentRelationship ((userIdType) strtoul (argv[2], NULL, 10), (userIdType) strtoul (argv[3], NULL, 10))) != OK )
+      {
+        printf ("\n%s\n\n", showTextErrorMessage (errorCode));
+        exit (errorCode);
+      }
+      printf ("\n%s\n\n", showTextErrorMessage (OK));
+    break;
+	
+/*--------------------------------------------------------------------------------------------------------------------*/
+	
+    case 'E':
+      if (nbArgs != NB_ARGS_OF_EDIT_PARENT_OPTION)
+      {
+        printf ("\n%s\n\n", showTextErrorMessage (RELATIONSHIP_SYSTEM__WRONG_NB_ARGS_OF_EDIT_PARENT_OPTION));
+	exit (RELATIONSHIP_SYSTEM__WRONG_NB_ARGS_OF_EDIT_PARENT_OPTION);
+      } 
+      if ((errorCode = editParentRelationship ((userIdType) strtoul (argv[2], NULL, 10), (userIdType) strtoul (argv[3], NULL, 10), (userIdType) strtoul (argv[4], NULL, 10), (userIdType) strtoul (argv[5], NULL, 10))) != OK )
+      {
+        printf ("\n%s\n\n", showTextErrorMessage (errorCode));
+        exit (errorCode);
+      }
+      printf ("\n%s\n\n", showTextErrorMessage (OK));
+    break;   
+	
+/*--------------------------------------------------------------------------------------------------------------------*/
+	
+    case 'g':
+      if (nbArgs != NB_ARGS_OF_GET_USERS_OPTION)
+      {
+        printf ("\n%s\n\n", showTextErrorMessage (RELATIONSHIP_SYSTEM__NB_ARGS_OF_GET_USERS_OPTION));
+	exit (RELATIONSHIP_SYSTEM__NB_ARGS_OF_GET_USERS_OPTION);
+      } 
+      if ((errorCode = getUsers ( argv[optind] , &first )) != OK)
+      {
+        printf ("\n%s\n\n", showTextErrorMessage (errorCode));
+	exit (errorCode);
+      }
+      while (retrieveFIFO (&first, &last, &buffer) == OK)
+      {
+        #ifdef ENGLISH 
+          printf ( "\nUser: %s  -->  Id: %llu", buffer.name , buffer.userId );
+	#elif PORTUGUESE
+	  printf ( "\nUsuário: %s  -->  Id: %llu", buffer.name , buffer.userId );
+	#endif
+      }
+      freeFIFOResources (&first, &last);
+      printf ("\n\n%s\n\n", showTextErrorMessage (OK));
+    break;          
+	
+/*--------------------------------------------------------------------------------------------------------------------*/
+	
+    case 'm':
+      printf ("Option 'm' selected\n");
+    break;
+	
+/*--------------------------------------------------------------------------------------------------------------------*/
+	
+    case 'p':
+      if (nbArgs != NB_ARGS_OF_RECOVERY_OPTION)
+      {
+        printf ("\n%s\n\n", showTextErrorMessage (RELATIONSHIP_SYSTEM__NB_ARGS_OF_RECOVERY_OPTION));
+	exit (RELATIONSHIP_SYSTEM__NB_ARGS_OF_RECOVERY_OPTION);
+      } 
+      errorCode = recoveryPassword ((userIdType) strtoul (argv[2], NULL, 10));
+      printf ("\n%s\n\n", showTextErrorMessage (errorCode));
+      exit (errorCode);      
+    break;
+	
+/*--------------------------------------------------------------------------------------------------------------------*/
+	
+    case 'C':
+      if (nbArgs != NB_ARGS_OF_CHANGE_PASSWORD_OPTION)
+      {
+        printf ("\n%s\n\n", showTextErrorMessage (RELATIONSHIP_SYSTEM__NB_ARGS_OF_CHANGE_PASSWORD_OPTION));
+	exit (RELATIONSHIP_SYSTEM__NB_ARGS_OF_CHANGE_PASSWORD_OPTION);
+      } 
+      printf ("\n");
+      stringCopy (newPassword, getpass (showTextHelpMessage (RELATIONSHIP_SYSTEM__PROMPT_OF_PASSWORD)), MAX_LENGTH_PLAIN_PASS); 
+      printf ("\n");
+      if (strcmp (newPassword, getpass (showTextHelpMessage (RELATIONSHIP_SYSTEM__PROMPT_OF_CONFIRMATION))))
+      {
+        printf ("\n%s\n\n", showTextErrorMessage (RELATIONSHIP_SYSTEM__CONFIRMATION_DOES_NOT_MATCH));
+        exit (RELATIONSHIP_SYSTEM__CONFIRMATION_DOES_NOT_MATCH);
+      }
+      printf ("\n");
+      errorCode = changePassword ((userIdType) strtoul (argv[2], NULL, 10), newPassword);
+      printf ("\n%s\n\n", showTextErrorMessage (errorCode));
+      exit (errorCode); 
+    break;    
+	
+/*--------------------------------------------------------------------------------------------------------------------*/
+	
+    case 'u':
+      printf ("Option 'u' selected\n");
+    break;           
+	
+/*--------------------------------------------------------------------------------------------------------------------*/
+	
+    default:
+      printf ("\n%s\n\n", showTextHelpMessage (RELATIONSHIP_SYSTEM__UNKNOWN_OPTION));
+      shortHelp ();
+  }                       
+      
+  exit (OK);
+}
+  
+
+// $RCSfile: relationshipSystem.c,v $
+@
+
+
+1.13
+log
+@ncursesMenu() function added
+@
+text
+@d15 1
+a15 1
+ * $Date: 2004/12/20 12:50:59 $
+d17 3
+d66 2
+a69 2
+#include <unistd.h>
+#include <string.h>
+d80 2
+d84 10
+d97 1
+a97 1
+static const char rcsid[] = "$Id: relationshipSystem.c,v 1.12 2004/12/20 12:50:59 marceloddm Exp marceloddm $";
+d103 1
+a103 1
+  char newUserPassword[MAX_LENGTH_PLAIN_PASS +1];
+d123 1
+a123 1
+    {"Frienship", 0, 0, 'F'}, 
+d152 1
+a152 1
+    printf ("%s\n", showTextErrorMessage (RELATIONSHIP_SYSTEM__NO_OPTION_SELECTED));
+d157 1
+a157 1
+    printf ("%s\n", showTextHelpMessage (RELATIONSHIP_SYSTEM__OPTION_MUST_COME_FIRST));
+d162 1
+a162 1
+    printf ("%s\n", showTextErrorMessage (RELATIONSHIP_SYSTEM__MORE_THAN_ONE_OPTION));
+d172 1
+a172 1
+      printf ("%s\n", showTextErrorMessage (errorCode));
+d177 1
+a177 1
+      printf ("%s\n", showTextErrorMessage (errorCode));
+d182 3
+a184 3
+      if (errno != ENOENT) /*ENOENT --> file does not exist*/
+     {
+	printf ("%s\n", showTextErrorMessage (RELATIONSHIP_SYSTEM__ERROR_OPENING_PASSWORD_FILE_FOR_READING));
+d189 1
+a189 1
+        printf ("%s\n", showTextErrorMessage (RELATIONSHIP_SYSTEM__NOT_YET_INSTALLED));
+d195 1
+a195 1
+      if ((errorCode = getUserData (passwordFile, "password", &administratorData)) != OK) 
+d197 1
+a197 1
+        printf ("%s\n", showTextErrorMessage (errorCode));
+d204 1
+a204 1
+        printf ("%s\n", showTextErrorMessage (errorCode));
+d216 4
+a219 5
+      if ((errorCode = ncursesMenu ()) != OK)
+      {
+        printf ("%s\n", showTextErrorMessage (errorCode));
+        exit (errorCode);
+      }
+d226 1
+a226 1
+      printf ("%s\n", showTextHelpMessage (RELATIONSHIP_SYSTEM__WELCOME_MESSAGE));
+d235 1
+a235 1
+        printf ("%s\n", showTextErrorMessage (RELATIONSHIP_SYSTEM__NB_ARGS_OF_INSTALL_OPTION));
+d240 1
+a240 1
+        printf ("%s\n", showTextErrorMessage (errorCode));
+d246 1
+a246 1
+          printf ("%s", showTextErrorMessage (errorCode));
+d249 1
+a249 1
+	    printf ("%s", showTextHelpMessage (RELATIONSHIP_SYSTEM__QUESTION_OF_REINSTALL));
+d252 1
+a252 1
+	        printf ("%s", showTextHelpMessage (RELATIONSHIP_SYSTEM__QUESTION_OF_REINSTALL));
+d255 1
+a255 1
+	      printf ("%s", showTextHelpMessage (RELATIONSHIP_SYSTEM__QUESTION_OF_REINSTALL));
+d261 1
+a261 1
+	      printf ("%s\n", showTextHelpMessage (RELATIONSHIP_SYSTEM__CONFIRMATION_OF_DO_NOT_REINSTALL));
+d267 1
+a267 1
+	        printf ("%s\n", showTextErrorMessage (errorCodeBackup));
+d279 1
+a279 1
+          printf ("%s\n", showTextHelpMessage (RELATIONSHIP_SYSTEM__INSTALLATION_DONE_SUCCESSFULLY));
+d288 1
+a288 1
+        printf ("%s\n", showTextErrorMessage (RELATIONSHIP_SYSTEM__WRONG_NB_ARGS_OF_ADD_OPTION));
+d291 15
+a305 2
+      stringCopy (newUserPassword, getpass (showTextHelpMessage (RELATIONSHIP_SYSTEM__PROMPT_OF_PASSWORD)), MAX_LENGTH_PLAIN_PASS); 
+      if (strcmp (newUserPassword, getpass (showTextHelpMessage (RELATIONSHIP_SYSTEM__PROMPT_OF_CONFIRMATION))))
+d307 8
+a314 2
+        printf ("%s\n", showTextErrorMessage (RELATIONSHIP_SYSTEM__LOGIN_INCORRECT_OF_NEW_USER));
+        exit (RELATIONSHIP_SYSTEM__LOGIN_INCORRECT_OF_NEW_USER);
+d316 2
+a317 1
+      if ((errorCode = fillUserData (&userData, argv, newUserPassword)) != OK)
+d319 1
+a319 1
+        printf ("%s\n", showTextErrorMessage (errorCode));
+d323 1
+a323 1
+      printf ("%s\n", showTextErrorMessage (errorCode));
+d332 1
+a332 1
+        printf ("%s\n", showTextErrorMessage (RELATIONSHIP_SYSTEM__NB_ARGS_OF_EDIT_OPTION));
+d337 1
+a337 1
+        printf ("%s\n", showTextErrorMessage (errorCode));
+d342 1
+a342 1
+        printf ("%s\n", showTextErrorMessage (errorCode));
+d346 1
+a346 1
+      printf ("%s\n", showTextErrorMessage (errorCode));
+d353 8
+a360 1
+      printf ("Option 'r' selected\n");
+d366 8
+a373 1
+      printf ("Option 'i' selected\n");
+d379 8
+a386 1
+      printf ("Option 'I' selected\n");
+d392 20
+a411 1
+      printf ("Option 'F' selected\n");
+d419 1
+a419 1
+        printf ("%s\n", showTextErrorMessage (RELATIONSHIP_SYSTEM__WRONG_NB_ARGS_OF_ACCEPT_OPTION));
+d423 1
+a423 1
+      printf ("%s\n", showTextErrorMessage (errorCode));
+d432 1
+a432 1
+        printf ("%s\n", showTextErrorMessage (RELATIONSHIP_SYSTEM__WRONG_NB_ARGS_OF_REJECT_OPTION));
+d436 1
+a436 1
+      printf ("%s\n", showTextErrorMessage (errorCode));
+d443 8
+a450 1
+      printf ("Option 'X' selected\n");
+d456 20
+a475 1
+      printf ("Option 'G' selected\n");
+d481 37
+a517 1
+      printf ("Option 'c' selected\n");
+d523 11
+a533 1
+      printf ("Option 'A' selected\n");
+d539 11
+a549 1
+      printf ("Option 'R' selected\n");
+d555 11
+a565 1
+      printf ("Option 'E' selected\n");
+d573 1
+a573 1
+        printf ("%s\n", showTextErrorMessage (RELATIONSHIP_SYSTEM__NB_ARGS_OF_GET_USERS_OPTION));
+d578 1
+a578 1
+        printf ("%s\n", showTextErrorMessage (errorCode));
+d581 1
+a581 1
+      while ( ( errorCode = retrieveFIFO ( &first, &last, &buffer ) ) == OK )
+d584 1
+a584 1
+          printf ( "\nUser: %s  |  Id: %llu \n", buffer.name , buffer.userId );
+d586 1
+a586 1
+	  printf ( "\nUsuário: %s  |  Id: %llu \n", buffer.name , buffer.userId );
+d589 2
+a590 1
+      printf ("%s\n", showTextErrorMessage (OK));
+d602 8
+a609 1
+      printf ("Option 'p' selected\n");
+d615 17
+a631 1
+      printf ("Option 'C' selected\n");
+d643 1
+a643 1
+      printf ("%s\n", showTextHelpMessage (RELATIONSHIP_SYSTEM__UNKNOWN_OPTION));
+@
+
+
+1.12
+log
+@Code of 'g' option has been added
+@
+text
+@d15 1
+a15 1
+ * $Date: 2004/12/19 18:47:39 $
+d17 3
+a62 1
+#include <curses.h>
+d65 2
+d75 5
+d82 1
+a82 1
+static const char rcsid[] = "$Id: relationshipSystem.c,v 1.11 2004/12/19 18:47:39 marceloddm Exp marceloddm $";
+d88 1
+d95 3
+a97 1
+  userDataType * first, * last;
+d197 3
+d201 5
+a205 1
+      printf ("Option 'n' selected\n");
+d208 2
+d216 2
+d269 2
+d272 19
+a290 1
+      printf ("Option 'a' selected\n");
+d293 2
+d310 4
+a313 9
+      }
+ 
+      if ((errorCode = editUserData (&userData)) != OK)
+      {
+        printf ("%s\n", showTextErrorMessage (errorCode));
+	exit (errorCode);
+      }
+
+      printf ("%s\n", showTextErrorMessage (OK));
+d315 2
+d322 2
+d328 2
+d334 2
+d340 2
+d343 8
+a350 1
+      printf ("Option 'P' selected\n");
+d353 2
+d356 8
+a363 1
+      printf ("Option 'J' selected\n");
+d366 2
+d372 2
+d378 2
+d384 2
+d390 2
+d396 2
+d402 2
+a404 1
+      errorCode = 0;
+d418 1
+a418 1
+          printf ( "User: %s Id:%llu \n", buffer.name , buffer.userId );
+d420 1
+a420 1
+	  printf ( "Usuário: %s Id:%llu \n", buffer.name , buffer.userId );
+d426 2
+d432 2
+d438 2
+d444 2
+d450 2
+@
+
+
+1.11
+log
+@RELATIONSHIP_SYSTEM__NO_OPTION_SELECTED constant added
+@
+text
+@d15 1
+a15 1
+ * $Date: 2004/12/17 13:38:46 $
+d17 3
+d73 1
+a73 1
+static const char rcsid[] = "$Id: relationshipSystem.c,v 1.10 2004/12/17 13:38:46 marceloddm Exp marceloddm $";
+d84 2
+a85 1
+  userDataType userData, administratorData;
+d156 1
+a156 1
+      {
+d266 1
+a266 1
+      printf ("antes da edit\n");
+d272 1
+a272 1
+      printf ("passou pela edit\n");
+d325 20
+a344 1
+      printf ("Option 'g' selected\n");
+@
+
+
+1.10
+log
+@Code of 'edit' option added
+@
+text
+@d15 1
+a15 1
+ * $Date: 2004/12/16 00:28:35 $
+d17 3
+d67 1
+d70 1
+a70 1
+static const char rcsid[] = "$Id: relationshipSystem.c,v 1.9 2004/12/16 00:28:35 marceloddm Exp marceloddm $";
+d81 1
+a81 1
+  userDataType userData;
+d118 6
+a128 3
+  
+  opterr = 0;
+  option = getopt_long (argc, argv, stringOptions, longOptions, &command);
+d164 1
+a164 1
+      if ((errorCode = getUserData (passwordFile, "password", &userData)) != OK) 
+d171 1
+a171 1
+      if ((errorCode = checkPassword (userData.encryptedPass, password)) != OK)
+d178 1
+a178 1
+
+d197 1
+a197 1
+      if ((errorCode = fillUserData (&userData, argv, password)) != OK)
+d203 1
+a203 1
+        if ((errorCode = install (&userData)) != OK)
+d262 1
+d268 1
+d271 1
+a271 1
+	
+@
+
+
+1.9
+log
+@Bugs have been solved!
+We have to remember to replace the getchar() function by another with better performace
+@
+text
+@d15 1
+a15 1
+ * $Date: 2004/12/15 20:31:45 $
+d17 4
+d31 1
+a31 1
+ * Next step: fill the administratorData variable with dada given by command line.
+d66 1
+a66 1
+static const char rcsid[] = "$Id: relationshipSystem.c,v 1.8 2004/12/15 20:31:45 marceloddm Exp marceloddm $";
+d77 1
+a77 1
+  userDataType administratorData;
+d157 1
+a157 1
+      if ((errorCode = getUserData (passwordFile, "password", &administratorData)) != OK) 
+d164 1
+a164 1
+      if ((errorCode = checkPassword (administratorData.encryptedPass, password)) != OK)
+d190 1
+a190 1
+      if ((errorCode = fillUserData (&administratorData, argv, password)) != OK)
+d196 1
+a196 1
+        if ((errorCode = install (&administratorData)) != OK)
+d240 21
+a260 1
+      printf ("Option 'e' selected\n");
+@
+
+
+1.8
+log
+@The program can be reinstalled now!
+@
+text
+@d15 1
+a15 1
+ * $Date: 2004/12/15 01:36:37 $
+d17 3
+d62 1
+a62 1
+static const char rcsid[] = "$Id: relationshipSystem.c,v 1.7 2004/12/15 01:36:37 marceloddm Exp marceloddm $";
+d140 1
+a140 1
+      if (errno != ENOENT)
+@
+
+
+1.7
+log
+@Bugs have been solved, but we still with problems with getchar() function and when reinstalling the system
+The copyDataToUserData() function have been added to the code
+@
+text
+@d15 1
+a15 1
+ * $Date: 2004/12/14 02:52:06 $
+d17 4
+d48 1
+d59 1
+a59 1
+static const char rcsid[] = "$Id: relationshipSystem.c,v 1.6 2004/12/14 02:52:06 marceloddm Exp $";
+a70 1
+  tempUserDataType tempData;
+d183 1
+a183 1
+      if ((errorCode = fillUserData (&tempData, argv, password)) != OK)
+d187 1
+a187 11
+      }
+      if ((errorCode = checkUserData (&tempData)) != OK)
+      {
+        printf ("%s\n", showTextErrorMessage (errorCode));
+        exit (errorCode); 
+      }
+      if ((errorCode = copyDataToUserData (&tempData, &administratorData)) != OK)
+      {
+        printf ("%s\n", showTextErrorMessage (errorCode));
+	exit (errorCode);
+      }
+@
+
+
+1.6
+log
+@New functions like backupSystemFiles() have been added
+The code have been modified, but we have not complete the implementation of install() function...
+Next step: fill the administratorData variable with dada given by command line.
+@
+text
+@d15 1
+a15 1
+ * $Date: 2004/12/13 08:00:01 $
+d17 5
+d54 1
+a54 1
+static const char rcsid[] = "$Id: relationshipSystem.c,v 1.5 2004/12/13 08:00:01 marceloddm Exp marceloddm $";
+d62 1
+a62 1
+  unsigned errorCode, errorCode2, nbArgs;
+d66 1
+d94 1
+d97 2
+d103 6
+a109 1
+  
+a110 1
+  
+d117 1
+a117 1
+  nbArgs = argc - optind;
+d126 6
+a131 1
+    if (option != 't')
+d133 1
+a133 1
+      if ((errorCode = getLongFilename (DATA_DIR, USERS_FILE_NAME, passwordFilename)) != OK)
+d135 2
+a136 2
+        printf ("%s\n", showTextErrorMessage (errorCode));
+        exit (errorCode);
+d138 1
+a138 1
+      if ((passwordFile = fopen (passwordFilename, "r")) == NULL)
+d140 1
+a140 6
+        if (errno != ENOENT)
+	{
+	  printf ("%s\n", showTextErrorMessage (RELATIONSHIP_SYSTEM__ERROR_OPENING_PASSWORD_FILE_FOR_READING));
+	  exit (RELATIONSHIP_SYSTEM__ERROR_OPENING_PASSWORD_FILE_FOR_READING);
+	}
+	printf ("%s\n", showTextErrorMessage (RELATIONSHIP_SYSTEM__NOT_YET_INSTALLED));
+d143 3
+d149 1
+a149 1
+	fclose (passwordFile);
+d156 1
+a156 1
+	exit (errorCode);
+d168 3
+a170 1
+     help ();
+d174 20
+d197 1
+a197 1
+          printf ("%s\n", showTextErrorMessage (errorCode));
+a200 1
+	  
+d202 2
+a203 2
+	      while (((answer = getch ()) != 'y') && (answer != 'Y') && (answer != 'n') && (answer != 'N'))
+	        printf ("\n%s", showTextHelpMessage (RELATIONSHIP_SYSTEM__QUESTION_OF_REINSTALL));
+d205 2
+a206 2
+	      while (((answer = getch ()) != 's') && (answer != 'S') && (answer != 'n') && (answer != 'N'))
+	      printf ("\n%s", showTextHelpMessage (RELATIONSHIP_SYSTEM__QUESTION_OF_REINSTALL));
+d212 1
+a212 1
+	      printf ("\n%s", showTextHelpMessage (RELATIONSHIP_SYSTEM__CONFIRMATION_OF_DO_NOT_REINSTALL));
+d216 1
+a216 1
+	      if ((errorCode2 = backupSystemFiles ()) != OK)
+d218 2
+a219 2
+	        printf ("%s\n", showTextErrorMessage (errorCode2));
+	        exit (errorCode2);
+d228 2
+d231 1
+d311 1
+a311 1
+      printf ("\nUnknown option!\n");
+@
+
+
+1.5
+log
+@Alterations have been done --> install() function
+@
+text
+@d7 1
+a7 1
+// Author: Marcelo Duffles Donato Moreira
+d15 1
+a15 1
+ * $Date: 2004/12/11 12:38:31 $
+d17 3
+d39 1
+d49 1
+a49 1
+static const char rcsid[] = "$Id: relationshipSystem.c,v 1.4 2004/12/11 12:38:31 marceloddm Exp $";
+d55 1
+d58 1
+d60 1
+a60 1
+  userDataType userData;
+d100 1
+a100 2
+    printf ("Error #%u: %s\n", RELATIONSHIP_SYSTEM__MORE_THAN_ONE_OPTION,
+    			      showTextErrorMessage (RELATIONSHIP_SYSTEM__MORE_THAN_ONE_OPTION));
+d110 1
+a110 1
+      printf ("Error #%u: %s\n", errorCode, showTextErrorMessage (errorCode));
+d113 1
+a113 1
+   /* if (option != 't')
+d115 1
+a115 1
+      if ((errorCode = getUserData (ADMINISTRATOR_UID, &userData )) != OK)  ou seja, SISTEMA_NAO_INSTALADO 
+d117 1
+a117 1
+        printf ("Error #%u: %s\n", errorCode, showTextErrorMessage (errorCode));
+d120 11
+a130 1
+      if ((errorCode = checkPassword (ADMINISTRATOR_ENCRYPTED_PASSWORD, password)) != OK)
+d132 8
+a139 1
+        printf ("Error #%u: %s\n", errorCode, showTextErrorMessage (errorCode));
+d142 1
+a142 1
+    }*/
+d157 1
+a157 1
+        if ((errorCode = install (&userData)) != OK)
+d159 1
+a159 1
+          printf ("Error #%u: %s\n", errorCode, showTextErrorMessage (errorCode));
+d179 1
+a179 1
+	     /* if ((errorCode2 = backupSystemFiles ()) != OK)
+d181 1
+a181 1
+	        printf ("Error #%u: %s\n", errorCode2, showTextErrorMessage (errorCode2));
+d183 1
+a183 1
+	      }*/
+@
+
+
+1.4
+log
+@Author changed for 'marceloddm'
+@
+text
+@d15 1
+a15 1
+ * $Date: 2004/11/30 00:29:48 $
+d17 3
+d35 1
+d40 3
+d45 1
+a45 1
+static const char rcsid[] = "$Id: relationshipSystem.c,v 1.3 2004/11/30 00:29:48 root Exp root $";
+d49 6
+a54 3
+  char stringOptions[] = "htgareiIPJXScARsmpu";
+  int option;
+  int command;
+d57 22
+a78 19
+    {"help",    0, 0, 'h'},
+    {"install", 1, 0, 't'},
+    {"graphic", 0, 0, 'g'},
+    {"add",     1, 0, 'a'},
+    {"remove",  1, 0, 'r'},
+    {"edit",    1, 0, 'e'},
+    {"invite",  1, 0, 'i'},
+    {"Invite",  1, 0, 'I'},
+    {"Accept",  1, 0, 'P'},
+    {"Reject",  1, 0, 'J'},
+    {"Exclude", 1, 0, 'X'},
+    {"Search",  1, 0, 'S'},
+    {"change",  1, 0, 'c'},
+    {"Add",     1, 0, 'A'},
+    {"Remove",  1, 0, 'R'},
+    {"search",  1, 0, 's'},
+    {"mount",   1, 0, 'm'},
+    {"password",1, 0, 'p'},
+    {"upload",  1, 0, 'u'},
+d89 27
+a115 2
+  if ((option = getopt_long (argc, argv, stringOptions, longOptions, &command)) != -1)
+    switch (option)
+d117 135
+a251 80
+        case 'h':
+	 printf ("Option 'h' selected\n");
+	 help ();
+	break;
+	
+	case 't':
+	  printf ("Option 't' selected\n");
+	break;
+	
+	case 'g':
+	  printf ("Option 'g' selected\n");
+	break;
+	
+	case 'a':
+	  printf ("Option 'a' selected\n");
+	break;
+	
+	case 'r':
+	  printf ("Option 'r' selected\n");
+	break;
+	
+	case 'e':
+	  printf ("Option 'e' selected\n");
+	break;
+	
+	case 'i':
+	  printf ("Option 'i' selected\n");
+	break;
+	
+	case 'I':
+	  printf ("Option 'I' selected\n");
+	break;    
+	
+	case 'P':
+	  printf ("Option 'P' selected\n");
+	break;
+	
+	case 'J':
+	  printf ("Option 'J' selected\n");
+	break;
+	
+	case 'X':
+	  printf ("Option 'X' selected\n");
+	break;
+	
+	case 'S':
+	  printf ("Option 'S' selected\n");
+	break;
+	
+	case 'c':
+	  printf ("Option 'c' selected\n");
+	break;
+	
+	case 'A':
+	  printf ("Option 'A' selected\n");
+	break;
+	
+	case 'R':
+	  printf ("Option 'R' selected\n");
+	break;
+	
+	case 's':
+	  printf ("Option 's' selected\n");
+	break;         
+	
+	case 'm':
+	  printf ("Option 'm' selected\n");
+	break;
+	
+	case 'p':
+	  printf ("Option 'p' selected\n");
+	break;
+	
+	case 'u':
+	  printf ("Option 'u' selected\n");
+	break;              
+	
+	default:
+	  printf ("Unknown option\n");
+      }                       
+@
+
+
+1.3
+log
+@Help option is done
+@
+text
+@d15 1
+a15 1
+ * $Date: 2004/11/29 20:34:36 $
+d17 4
+a20 1
+ * Revision 1.2  2004/11/29 20:34:36  marceloddm
+d23 1
+a23 1
+ * Revision 1.1  2004/11/28 13:58:52  marceloddm
+d38 1
+a38 1
+static const char rcsid[] = "$Id: relationshipSystem.c,v 1.2 2004/11/29 20:34:36 marceloddm Exp marceloddm $";
+@
+
+
+1.2
+log
+@Main program source file
+@
+text
+@d9 1
+a9 1
+// Date: 28/11/2004
+d15 1
+a15 1
+ * $Date: 2004/11/28 13:58:52 $
+d17 3
+d32 1
+d35 1
+a35 1
+static const char rcsid[] = "$Id: relationshipSystem.c,v 1.1 2004/11/28 13:58:52 marceloddm Exp marceloddm $";
+d68 1
+a68 2
+    printf ("Menu\n");
+    //showHelpMenu (argv[0], &longOptions);
+d78 1
+@
+
+
+1.1
+log
+@Initial revision
+@
+text
+@d9 1
+a9 1
+// Date: 22/10/2004
+d15 5
+a19 2
+ * $Date$
+ * $Log$
+d22 1
+a22 1
+ 
+d25 1
+a29 1
+#define NB_ARGS
+d31 1
+a31 1
+static const char rcsid[] = "$Id$";
+d35 28
+a62 1
+  if (argc != NB_ARGS)
+d64 3
+a66 2
+    printf ("USE: <%s> <valid characters> <length of the random string>\n", argv[0]);
+    exit (INV_ARGS);   
+d69 86
+a155 2
+  exit (OK); 
+} 
+d157 1
+a157 1
+// $RCSfile$
+@

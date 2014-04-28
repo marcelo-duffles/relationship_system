@@ -1,0 +1,114 @@
+head	1.2;
+access;
+symbols;
+locks
+	marceloddm:1.2; strict;
+comment	@ * @;
+
+
+1.2
+date	2005.02.16.22.11.21;	author marceloddm;	state Exp;
+branches;
+next	1.1;
+
+1.1
+date	2004.12.20.12.48.10;	author marceloddm;	state Exp;
+branches;
+next	;
+
+
+desc
+@getUsers() function header file
+@
+
+
+1.2
+log
+@CGI's added
+@
+text
+@//=================================================================//
+// Universidade Federal do Rio de Janeiro
+// Escola Politécnica
+// Departamento de Eletrônica e de Computação
+// Professor Marcelo Luiz Drumond Lanza
+// Computation II - Class 2004/2
+// Authors: Carlo Fragni and Marcelo Duffles Donato Moreira 
+// Description: getUsers() primary function source file 
+// Date: 20/12/2004
+//=================================================================//
+
+/* 
+ * RCS COMMENTS
+ *
+ * $Date: 2004/12/20 12:48:10 $
+ * $Log: getUsers.h,v $
+ * Revision 1.1  2004/12/20 12:48:10  marceloddm
+ * Initial revision
+ *
+ */
+
+#include "types.h"
+ 
+#ifndef _GET_USERS_H_
+#define _GET_USERS_H_ "@@(#)getUsers.h $Revision: 1.1 $"
+/*---------------------------------------------------------------------------------------------------------*/
+unsigned getUsers ( char * searchKey , userDataType ** firstFound );
+/* 	
+INPUT ARGUMENTS
+	- char * searchKey
+	
+OUTPUT ARGUMENTS
+	- userDataType ** firstFound
+	
+DESCRIPTION
+	The getUsers() function search for users which contains the searchKey in their userNames.
+	
+RETURNED VALUES
+	The getUsers() function returns:
+	- GET_USERS__INVALID_SEARCH_KEY if the `searchKey` is invalid;
+	- GET_USERS__ERROR_OPENING_USERS_FILE_FOR_READING if there's an error while opening the users file;
+	- GET_USERS__USERS_FILE_DOES_NOT_EXIST if the users file doesn't exist;
+	- GET_USERS__USER_NOT_FOUND if there are no users with userNames containing the searchKey;
+	- An error code of getLongFilename() function if an error occours while getting long filename;
+	- An error code of getUserData() function if an error occours while getting user data from a file;
+	- An error code of insertFIFO() function if an error occurs while inserting in the FIFO;
+	- OK in case of success. 
+*/
+/*---------------------------------------------------------------------------------------------------------*/
+
+#endif
+
+/*$RCSfile: getUsers.h,v $*/
+
+
+@
+
+
+1.1
+log
+@Initial revision
+@
+text
+@d8 2
+a9 2
+// Description: editUserData() primary function source file 
+// Date: 15/12/2004
+d15 5
+a19 2
+ * $Date$
+ * $Log$
+d22 1
+a22 1
+#include"types.h"
+d24 2
+a25 2
+#ifndef _SUBSTITUIR_
+#define _SUBSTITUIR_ "@@(#)substituir.h$Revision$"
+d51 1
+a51 1
+#endif /*_SUBSTITUIR_*/
+d53 1
+a53 1
+/*$RCSfile$*/
+@

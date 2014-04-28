@@ -1,0 +1,75 @@
+head	1.1;
+access;
+symbols;
+locks
+	root:1.1; strict;
+comment	@ * @;
+
+
+1.1
+date	2004.11.27.18.47.40;	author root;	state Exp;
+branches;
+next	;
+
+
+desc
+@Test program of checkField() function source file
+@
+
+
+1.1
+log
+@Initial revision
+@
+text
+@//=======================================================================//
+// Universidade Federal do Rio de Janeiro
+// Escola Politécnica
+// Departamento de Eletrônica e de Computação
+// Professor Marcelo Luiz Drumond Lanza
+// Computation II - Class 2004/2
+// Author: Marcelo Duffles Donato Moreira
+// Description: Test program of the checkField() function source file 
+// Date: 28/11/2004
+//=======================================================================//
+
+/* 
+ * RCS COMMENTS
+ *
+ * $Date$
+ * $Log$
+ */ 
+ 
+ 
+#include <stdio.h>
+#include <stdlib.h>
+#include "functions.h"
+#include "const.h"
+#include "error.h"
+ 
+#define NB_ARGS  5
+
+static const char rcsid[] = "$Id$";
+
+int main (int argc, char **argv)
+{
+  unsigned errorCode;
+  char longFilename[MAX_LENGTH_LONG_FILENAME +1];
+  
+  if (argc != NB_ARGS)
+  {
+    printf ("USE: <%s> <FIELD> <VALID CHARACTERS> <MIN LENGTH> <MAX LENGTH>\n", argv[0]);
+    exit (INV_ARGS);   
+  }
+  if ((errorCode = getLongFilename (argv[2], argv[1], longFilename)) != OK)
+  {
+    printf ("Erro #%u: %s\n", errorCode, showTextErrorMessage (errorCode));
+    exit (errorCode);
+  }
+  
+  printf ("Long filename: \"%s\"\n", longFilename);
+  exit (OK);
+} 
+
+// $RCSfile$
+@

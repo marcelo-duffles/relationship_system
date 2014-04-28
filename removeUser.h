@@ -1,0 +1,61 @@
+//=================================================================//
+// Universidade Federal do Rio de Janeiro
+// Escola Politécnica
+// Departamento de Eletrônica e de Computação
+// Professor Marcelo Luiz Drumond Lanza
+// Computation II - Class 2004/2
+// Authors: Carlo Fragni and Marcelo Duffles Donato Moreira 
+// Description: removeUser() primary function source file. 
+// Date: 15/12/2004
+//=================================================================//
+
+/* 
+ * RCS COMMENTS
+ *
+ * $Date: 2005/02/16 22:11:21 $
+ * $Log: removeUser.h,v $
+ * Revision 1.1  2005/02/16 22:11:21  marceloddm
+ * Initial revision
+ *
+ */
+
+
+ 
+#ifndef _REMOVE_USER_
+#define _REMOVE_USER_ "@(#)removeUser.h$Revision: 1.1 $"
+
+
+#include "types.h"
+
+/*---------------------------------------------------------------------------------------------------------*/
+unsigned removeUser ( userIdType userId);
+/* 	
+INPUT ARGUMENTS
+	- userIdType userId
+	
+DESCRIPTION
+	The removeUser() function does the needed operations to remove a user from the system .
+	
+RETURNED VALUES
+	The removeUser() function returns:
+	- REMOVE_USER__CANNOT_REMOVE_ADMINISTRATOR if the given userId is the administrator one;
+	- REMOVE_USER__ERROR_OPENING_USERS_FILE_FOR_READING if an error occurs while trying to open the users file for reading;
+	- REMOVE_USER__USERS_FILE_DOES_NOT_EXIST if the users file doesn't exist;
+	- REMOVE_USER__ERROR_OPENING_USERS_TEMP_FILE_FOR_WRITTING if an error occurs while trying to open the users temporary file for writting;
+	- REMOVE_USER__USER_NOT_FOUND if no user was found with the given userId;
+	- REMOVE_USER__ERROR_OPENING_PASSWORD_FILE_FOR_READING if an error occurs while trying to open the password file for reading;
+	- REMOVE_USER__PASSWORD_FILE_DOES_NOT_EXIST if the password file doesn't exist;
+	- REMOVE_USER__ERROR_OPENING_PASSWORD_TEMP_FILE_FOR_WRITTING if an error occurs while trying to open the password temporary file for writting;
+	- An error code of getLongFilename() function if an error occurs while getting long filename;
+	- An error code of getUserData() function if an error occurs while getting an userData from a file;
+	- An error code of putUserData() function if an error occurs while putting userData in a file;
+	- An error code of getDataFromId() function if an error occurs while aquiring the data from an id;
+	- OK in case of success. 
+*/
+/*---------------------------------------------------------------------------------------------------------*/
+
+#endif /*_REMOVE_USER_*/
+
+/*$RCSfile: removeUser.h,v $*/
+
+

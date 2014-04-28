@@ -1,0 +1,190 @@
+//=================================================================//
+// Universidade Federal do Rio de Janeiro
+// Escola Politécnica
+// Departamento de Eletrônica e de Computação
+// Professor Marcelo Luiz Drumond Lanza
+// Computation II - Class 2004/2
+// Authors: Carlo Fragni and Marcelo Duffles Donato Moreira 
+// Description: removeUser() primary function source file 
+// Date: 29/12/2004
+//=================================================================//
+
+/* 
+ * RCS COMMENTS
+ *
+ * $Date: 2005/02/16 22:11:21 $
+ * $Log: removeUser.c,v $
+ * Revision 1.1  2005/02/16 22:11:21  marceloddm
+ * Initial revision
+ *
+ */
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <errno.h>
+#include <sys/errno.h>
+#include "const.h"
+#include "types.h"
+#include "error.h"
+#include "functions.h"
+#include "editUserData.h"
+#include "config.h"
+#include "removeUser.h"
+ 
+static const char rcsid [] = "$Id: removeUser.c,v 1.1 2005/02/16 22:11:21 marceloddm Exp marceloddm $";
+
+unsigned removeUser ( userIdType userId )
+{
+  unsigned retCode  = 0;
+  unsigned retCode2 = 0;
+  char usersFileName        [MAX_LENGTH_LONG_FILENAME+1];
+  char usersTempFileName    [MAX_LENGTH_LONG_FILENAME+1];
+  char passwordFileName     [MAX_LENGTH_LONG_FILENAME+1];
+  char passwordTempFileName [MAX_LENGTH_LONG_FILENAME+1];
+  char inFilename           [MAX_LENGTH_LONG_FILENAME+1];
+  char outFilename          [MAX_LENGTH_LONG_FILENAME+1];
+  char tempInFilename[20 +4 +1];
+  char tempOutFilename[20 +5 +1]; 
+  boolean found;
+  userDataType buffer;
+  FILE * rUsers, * rPassword, * wUsers, * wPassword;
+
+  if ( userId == 0 )
+    return ( REMOVE_USER__CANNOT_REMOVE_ADMINISTRATOR );
+  
+  if (( retCode = getLongFilename ( DATA_DIR , USERS_FILE_NAME , usersFileName )) != OK )
+    return (retCode);
+  if (( retCode = getLongFilename ( DATA_DIR , PASSWORD_FILE_NAME , passwordFileName )) != OK )
+    return (retCode);  
+  if ((retCode = getLongFilename (DATA_DIR, PASSWORD_TEMP_FILE_NAME, passwordTempFileName)) != OK)
+    return (retCode);
+  if (( retCode = getLongFilename ( DATA_DIR , USERS_TEMP_FILE_NAME , usersTempFileName )) != OK )
+    return (retCode);  
+        
+  if (!(rUsers = fopen ( usersFileName , "r" )))
+  {
+    if (errno != ENOENT)
+      return ( REMOVE_USER__ERROR_OPENING_USERS_FILE_FOR_READING );
+    return ( REMOVE_USER__USERS_FILE_DOES_NOT_EXIST );
+  }
+  
+  if (!(wUsers = fopen ( usersTempFileName , "w" )))
+  {
+    fclose ( rUsers );
+    return ( REMOVE_USER__ERROR_OPENING_USERS_TEMP_FILE_FOR_WRITTING );
+  }   
+  
+  found = false;
+
+  for( retCode = 0, found = false ; retCode != GET_USER_ID__END_OF_FILE ; )  
+  {
+    if (( retCode = getUserData ( rUsers , USERS_FILE_NAME , &buffer )) != OK )
+      if (retCode != GET_USER_ID__END_OF_FILE)
+      {
+        fclose ( rUsers );
+        fclose ( wUsers );
+	remove (usersTempFileName);
+        return ( retCode );
+      }
+    
+    if ( retCode != GET_USER_ID__END_OF_FILE )
+    {
+      if ( userId == buffer.userId)
+        found = true; 
+      if ( userId != buffer.userId )
+      {
+        if ((retCode2 = putUserData ( wUsers, USERS_TEMP_FILE_NAME, &buffer )) != OK )
+        {
+	  fclose (rUsers);
+	  fclose (wUsers);
+	  remove (usersTempFileName);
+	  return (retCode2);
+        }
+      }            
+    }
+  }
+  if (!found)
+  {
+    fclose( rUsers );
+    fclose( wUsers );
+    return (REMOVE_USER__USER_NOT_FOUND);
+  }
+
+  fclose( rUsers );
+  fclose( wUsers );
+  
+  if (( retCode = getDataFromId ( userId, &buffer )) != OK )
+    return ( retCode );
+
+  rename (usersTempFileName, usersFileName);
+     
+  if ( buffer.category == relative )
+    return ( OK );
+ 
+     
+  if ((rPassword = fopen (passwordFileName, "r")) == NULL)
+  {
+    if (errno != ENOENT)
+      return (REMOVE_USER__ERROR_OPENING_PASSWORD_FILE_FOR_READING);
+    return (REMOVE_USER__PASSWORD_FILE_DOES_NOT_EXIST);
+  }  
+ 
+  if ((wPassword = fopen (passwordTempFileName, "w")) == NULL)
+  {
+    fclose ( rPassword );
+    return (REMOVE_USER__ERROR_OPENING_PASSWORD_TEMP_FILE_FOR_WRITTING);   
+  }
+     
+  found = false;
+  
+  for (retCode = 0; retCode != GET_USER_ID__END_OF_FILE;)  
+  {
+    if ((retCode = getUserData (rPassword, PASSWORD_FILE_NAME, &buffer)) != OK) /*READING PASSWORD FILE*/
+      if (retCode != GET_USER_ID__END_OF_FILE)
+      {
+        fclose (rPassword);
+	fclose (wPassword);
+	remove (passwordTempFileName);
+        return (retCode);
+      }
+    if (retCode != GET_USER_ID__END_OF_FILE) 
+    {
+      if ( buffer.userId != userId ) /*JUST COPYING THE OTHER USERS DATA*/
+      {
+	if ((retCode2 = putUserData ( wPassword, PASSWORD_TEMP_FILE_NAME, &buffer )) != OK )
+        {
+	  fclose (rPassword);
+	  fclose (wPassword);
+	  remove (passwordTempFileName);
+	  return (retCode2);
+        }
+      }
+    }  
+  }
+  
+  fclose ( rPassword);
+  fclose ( wPassword);
+    
+  /*REPLACING FILES */
+  
+  rename (passwordTempFileName, passwordFileName);
+  
+  /*REMOVING .in AND .out FILES*/
+  
+  snprintf (tempInFilename, 20 +3 +1, "%020llu.in", buffer.userId); 
+  if ((retCode = getLongFilename (DATA_DIR, tempInFilename, inFilename)) != OK)
+    return (retCode);
+  remove (inFilename);
+  
+  snprintf (tempOutFilename, 20 +4 +1, "%020llu.out", buffer.userId); 
+  if ((retCode = getLongFilename (DATA_DIR, tempOutFilename, outFilename)) != OK)
+    return (retCode);
+  remove (outFilename);
+      
+  return (OK);
+}  
+
+/*$RCSfile: removeUser.c,v $*/
+
+
